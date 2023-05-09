@@ -10,5 +10,8 @@
   },
   "scripts": {
     "test": "jest"
+  },
+  "dependencies": {
+    "viem": "^0.3.19"
   }
 }
