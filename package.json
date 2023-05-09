@@ -1,0 +1,15 @@
+{
+  "name": "web3protocol",
+  "version": "0.1",
+  "description": "Parse and execute ERC-4804 web3:// URLs",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "npx tsc"
+  },
+  "author": "nand2",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0"
+  }
+}
