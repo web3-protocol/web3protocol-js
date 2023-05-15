@@ -77,21 +77,20 @@ let supportedTypes = [
 
 
 
-async function parseAutoUrl(path, web3Client) {
-  let modeArguments = {
-    methodName: '',
-    methodArgTypes: [],
-    methodArgValues: [],
-    methodReturnTypes: ['string'],
-    methodReturnJsonEncode: false,
-  }
-  // Default: We return as plain text
-  let mimeType = 'text/plain';
+async function parseAutoUrl(result, path, web3Client) {
+  // Default: We return as html
+  result.mimeType = 'text/html';
 
-  // Path must be at least "/"
-  if(path === undefined || path == "") {
-    path = "/";
+  // If "/" is called, call the contract with empty calldata
+  if(path === undefined || path == "" || path == "/") {
+    result.contractCallMode = 'calldata'
+    result.calldata = '0x'
+    return
   }
+
+  result.contractCallMode = 'method';
+  // Default return type
+  result.methodReturnTypes = ['string']
 
   // Separate path from search params
   let matchResult = path.match(/^(?<pathname>[^?]*)([?](?<searchParams>.*))?$/)
@@ -99,7 +98,7 @@ async function parseAutoUrl(path, web3Client) {
     throw new Error("Failed basic parsing of the path");
   }
   pathname = matchResult.groups.pathname
-  let pathnameParts = path.split('/')  
+  let pathnameParts = pathname.split('/')  
   searchParams = new URLSearchParams(matchResult.groups.searchParams);
 
   // Determine mime, if set
@@ -107,12 +106,12 @@ async function parseAutoUrl(path, web3Client) {
   if(argValueParts.length > 1) {
     let specifiedMimeType = mime.lookup(argValueParts[argValueParts.length - 1])
     if(specifiedMimeType != false) {
-      mimeType = specifiedMimeType
+      result.mimeType = specifiedMimeType
     }
   }  
 
   // Determine method name
-  modeArguments.methodName = pathnameParts[1];
+  result.methodName = pathnameParts[1];
 
   // Determine args
   pathnameParts = pathnameParts.slice(2)
@@ -151,31 +150,28 @@ async function parseAutoUrl(path, web3Client) {
     }
 
     // Finally, save the args and its type
-    modeArguments.methodArgTypes.push(detectedType ? detectedType : "bytes")
-    modeArguments.methodArgValues.push(argValue)
+    result.methodArgTypes.push(detectedType ? detectedType : "bytes")
+    result.methodArgValues.push(argValue)
   }
 
   // Handle the return definition
   let returnsParam = searchParams.get('returns')
   if(returnsParam && returnsParam.length >= 2) {
     // When we have a return definition, we returns everything as JSON
-    modeArguments.methodReturnJsonEncode = true;
+    result.methodReturnJsonEncode = true;
 
     returnsParamParts = returnsParam.substr(1, returnsParam.length - 2).split(',').map(returnType => returnType.trim()).filter(x => x != '')
 
     if(returnsParamParts == 0) {
-      modeArguments.methodReturnTypes = ['bytes']
+      result.methodReturnTypes = ['bytes']
     }
     else {
-      modeArguments.methodReturnTypes = []
+      result.methodReturnTypes = []
       for(let i = 0; i < returnsParamParts.length; i++) {
-        modeArguments.methodReturnTypes.push(returnsParamParts[i])
+        result.methodReturnTypes.push(returnsParamParts[i])
       }
     }
   }
-
-
-  return [modeArguments, mimeType]
 }
 
 module.exports = { parseAutoUrl }

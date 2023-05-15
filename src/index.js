@@ -17,8 +17,21 @@ async function parseUrl(url) {
       resolvedName: null,
     },
     chainId: null,
-    mode: null, // "auto" or "manual"
-    modeArguments: {},
+    // Web3 'mode': auto or 'manual'
+    mode: null,
+    // How do we call the smartcontract
+    // 'calldata' : We send the specified calldata
+    // 'method': We use the specified method parameters
+    contractCallMode: null,
+    // For contractCallMode: calldata
+    calldata: null,
+    // For contractCallMode: method
+    methodName: null,
+    methodArgTypes: [],
+    methodArgValues: [],
+    methodReturnTypes: ['string'],
+    methodReturnJsonEncode: false,
+    // The output shall be marked as being this mimetype
     mimeType: null
   }
 
@@ -129,14 +142,31 @@ async function parseUrl(url) {
 
   // Parse the URL per the selected mode
   if(result.mode == 'manual') {
-    result.modeArguments = parseManualUrl(urlMainParts.path)
+    parseManualUrl(result, urlMainParts.path)
   }
   else if(result.mode == 'auto') {
-    [result.modeArguments, result.mimeType] = await parseAutoUrl(urlMainParts.path, web3Client)
+    await parseAutoUrl(result, urlMainParts.path, web3Client)
   }
 
   return result
 }
 
+
+/**
+ * Execute a parsed web3:// URL from parseUrl()
+ */
+async function fetchParsedUrl(parsedUrl) {
+
+}
+
+/**
+ * Fetch a web3:// URL
+ */
+async function fetchUrl(url) {
+  let parsedUrl = parseUrl(url)
+  let result = fetchParsedUrl(parsedUrl)
+
+  return result;
+}
 
 module.exports = { parseUrl };

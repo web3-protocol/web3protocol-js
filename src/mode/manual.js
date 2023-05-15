@@ -1,4 +1,4 @@
-function parseManualUrl(path) {
+function parseManualUrl(result, path) {
   // Path must be at least "/"
   if(path === undefined || path == "") {
     path = "/";
@@ -8,10 +8,8 @@ function parseManualUrl(path) {
   let decodedPath = decodeURIComponent(path)
   let callData = "0x" + Buffer.from(decodedPath).toString('hex')
 
-  result = {
-    callData: callData,
-  }
-  return result
+  result.contractCallMode = 'calldata'
+  result.calldata = callData
 }
 
 module.exports = { parseManualUrl }
