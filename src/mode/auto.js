@@ -1,4 +1,5 @@
 const mime = require('mime-types')
+const { isSupportedDomainName, resolveDomainName } = require('../name-service/index')
 
 //
 // The supported types in arguments
@@ -15,7 +16,7 @@ let supportedTypes = [
       }
 
       if(/^[0-9.]+$/.test(x) == false) {
-        throw new Error("Number not made of [0-9.]")
+        throw new Error("Number not made of numbers and dot")
       }
 
       x = parseInt(x)
@@ -25,6 +26,7 @@ let supportedTypes = [
       if(x < 0) {
         throw new Error("Number must be positive")
       }
+
       return x
     },
   },
@@ -32,12 +34,16 @@ let supportedTypes = [
     type: 'bytes32',
     autoDetectable: true,
     parse: async (x, web3Client) => {
-      if(x.length != 34) {
+      if(x.length != 66) {
         throw new Error("Bad length (must include 0x in front)")
       }
       if(x.substr(0, 2) != '0x') {
         throw new Error("Must start with 0x")
       }
+      if(/^[0-9a-f]+$/.test(x.substr(2)) == false) {
+        throw new Error("Invalid hexadecimal")
+      }
+
       return x
     }
   }, 
@@ -45,7 +51,7 @@ let supportedTypes = [
     type: 'address',
     autoDetectable: true,
     parse: async (x, web3Client) => {
-      if(x.length == 22 && x.substr(0, 2) == '0x') {
+      if(x.length == 42 && x.substr(0, 2) == '0x' && /^[0-9a-fA-F]+$/.test(x.substr(2))) {
         return x;
       }
       if(isSupportedDomainName(x, web3Client.chain)) {
@@ -63,6 +69,9 @@ let supportedTypes = [
     parse: async (x, web3Client) => {
       if(x.length < 2 || x.substr(0, 2) != '0x') {
         throw new Error("Must start with 0x");
+      }
+      if(/^[0-9a-f]+$/.test(x.substr(2)) == false) {
+        throw new Error("Invalid hexadecimal")
       }
 
       return x;
@@ -108,7 +117,7 @@ async function parseAutoUrl(result, path, web3Client) {
     if(specifiedMimeType != false) {
       result.mimeType = specifiedMimeType
     }
-  }  
+  }
 
   // Determine method name
   result.methodName = pathnameParts[1];
@@ -127,7 +136,7 @@ async function parseAutoUrl(result, path, web3Client) {
           argValue = await supportedTypes[j].parse(argValue, web3Client)
         }
         catch(e) {
-          throw new Error('Argument ' + i + ' was explicitely requested to be casted to ' + supportedTypes[j].type + ', but : ' + e);
+          throw new Error('Argument ' + i + ' was explicitely requested to be casted to ' + supportedTypes[j].type + ', but : ' + e.message);
         }
         detectedType = supportedTypes[j].type
         break;
