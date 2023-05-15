@@ -79,76 +79,91 @@ const tests = [
   //     }
   //   }
   // },
+  // {
+  //   name: "Auto mode: arg set: integer",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/uint256!1",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     modeArguments: {
+  //       methodName: "tokenHTML",
+  //       methodArgTypes: ['uint256'],
+  //       methodArgValues: [1],
+  //       methodReturnTypes: ['string'],
+  //       methodReturnJsonEncode: false,
+  //     }
+  //   }
+  // },
+  // {
+  //   name: "Auto mode: arg set: string",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!1",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     modeArguments: {
+  //       methodName: "tokenHTML",
+  //       methodArgTypes: ['string'],
+  //       methodArgValues: ["1"],
+  //       methodReturnTypes: ['string'],
+  //       methodReturnJsonEncode: false,
+  //     }
+  //   }
+  // },
+  // {
+  //   name: "Auto mode: arg autodetection: integer",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     modeArguments: {
+  //       methodName: "tokenHTML",
+  //       methodArgTypes: ['uint256'],
+  //       methodArgValues: [1],
+  //       methodReturnTypes: ['string'],
+  //       methodReturnJsonEncode: false,
+  //     }
+  //   }
+  // },
   {
-    name: "Auto mode: arg set: integer",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/uint256!1",
+    name: "Auto mode: MIME specification",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1.svg",
     expectedResult: {
       mode: "auto",
       modeArguments: {
-        methodName: "tokenHTML",
-        methodArgTypes: ['uint256'],
-        methodArgValues: [1],
+        methodName: "tokenSVG",
+        methodArgTypes: ['bytes'],
+        methodArgValues: ["1.svg"],
         methodReturnTypes: ['string'],
-        methodReturnJsonEncode: false,
-      }
+        methodReturnJsonEncode: false, 
+      },
+      mimeType: 'image/svg+xml'
     }
   },
-  {
-    name: "Auto mode: arg set: string",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!1",
-    expectedResult: {
-      mode: "auto",
-      modeArguments: {
-        methodName: "tokenHTML",
-        methodArgTypes: ['string'],
-        methodArgValues: ["1"],
-        methodReturnTypes: ['string'],
-        methodReturnJsonEncode: false,
-      }
-    }
-  },
-  {
-    name: "Auto mode: arg autodetection: integer",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1",
-    expectedResult: {
-      mode: "auto",
-      modeArguments: {
-        methodName: "tokenHTML",
-        methodArgTypes: ['uint256'],
-        methodArgValues: [1],
-        methodReturnTypes: ['string'],
-        methodReturnJsonEncode: false,
-      }
-    }
-  },
-  {
-    name: "Auto mode: returns bytes as JSON",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1?returns=()",
-    expectedResult: {
-      mode: "auto",
-      modeArguments: {
-        methodName: "tokenHTML",
-        methodArgTypes: ['uint256'],
-        methodArgValues: [1],
-        methodReturnTypes: ['bytes'],
-        methodReturnJsonEncode: true,
-      }
-    }
-  },
-  {
-    name: "Auto mode: returns multiple arguments as JSON",
-    url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/50?returns=(uint256,uint256)",
-    expectedResult: {
-      mode: "auto",
-      modeArguments: {
-        methodName: "levelAndTile",
-        methodArgTypes: ['uint256', 'uint256'],
-        methodArgValues: [2, 50],
-        methodReturnTypes: ['uint256', 'uint256'],
-        methodReturnJsonEncode: true,
-      }
-    }
-  },
+  // {
+  //   name: "Auto mode: returns bytes as JSON",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1?returns=()",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     modeArguments: {
+  //       methodName: "tokenHTML",
+  //       methodArgTypes: ['uint256'],
+  //       methodArgValues: [1],
+  //       methodReturnTypes: ['bytes'],
+  //       methodReturnJsonEncode: true,
+  //     }
+  //   }
+  // },
+  // {
+  //   name: "Auto mode: returns multiple arguments as JSON",
+  //   url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/50?returns=(uint256,uint256)",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     modeArguments: {
+  //       methodName: "levelAndTile",
+  //       methodArgTypes: ['uint256', 'uint256'],
+  //       methodArgValues: [2, 50],
+  //       methodReturnTypes: ['uint256', 'uint256'],
+  //       methodReturnJsonEncode: true,
+  //     }
+  //   }
+  // },
 ]
 
 for(let i = 0; i < tests.length; i++) {

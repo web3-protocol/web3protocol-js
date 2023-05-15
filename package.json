@@ -12,6 +12,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "mime-types": "^2.1.35",
     "viem": "^0.3.19"
   }
 }

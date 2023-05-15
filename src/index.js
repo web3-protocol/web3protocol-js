@@ -18,7 +18,8 @@ async function parseUrl(url) {
     },
     chainId: null,
     mode: null, // "auto" or "manual"
-    modeArguments: {}
+    modeArguments: {},
+    mimeType: null
   }
 
   let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/]+)(:(?<chainId>[1-9][0-9]*))?(?<path>\/.*)?$/)
@@ -131,7 +132,7 @@ async function parseUrl(url) {
     result.modeArguments = parseManualUrl(urlMainParts.path)
   }
   else if(result.mode == 'auto') {
-    result.modeArguments = await parseAutoUrl(urlMainParts.path, web3Client)
+    [result.modeArguments, result.mimeType] = await parseAutoUrl(urlMainParts.path, web3Client)
   }
 
   return result
