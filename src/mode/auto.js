@@ -168,6 +168,7 @@ async function parseAutoUrl(result, path, web3Client) {
   if(returnsParam && returnsParam.length >= 2) {
     // When we have a return definition, we returns everything as JSON
     result.methodReturnJsonEncode = true;
+    result.mimeType = 'application/json'
 
     returnsParamParts = returnsParam.substr(1, returnsParam.length - 2).split(',').map(returnType => returnType.trim()).filter(x => x != '')
 

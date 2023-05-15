@@ -61,14 +61,7 @@ for(let i = 0; i < tests.length; i++) {
       let parsedUrl = await parseUrl(tst.url)
       // Compare expectedResult on 2 levels
       for (const [fieldName, fieldValue] of Object.entries(tst.expectedResult)) {
-        if(typeof fieldValue == "object") {
-          for (const [fieldName2, fieldValue2] of Object.entries(tst.expectedResult[fieldName])) {
-            expect(parsedUrl[fieldName][fieldName2]).toEqual(fieldValue2);
-          }
-        }
-        else {
-          expect(parsedUrl[fieldName]).toEqual(fieldValue);
-        }
+        expect(parsedUrl[fieldName]).toEqual(fieldValue);
       }
     }
   });

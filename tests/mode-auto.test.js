@@ -23,6 +23,7 @@ const tests = [
       methodArgValues: [1],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -46,6 +47,7 @@ const tests = [
       methodArgValues: [1],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
 
@@ -61,6 +63,7 @@ const tests = [
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -84,6 +87,7 @@ const tests = [
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
 
@@ -99,6 +103,7 @@ const tests = [
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -112,6 +117,7 @@ const tests = [
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -145,6 +151,7 @@ const tests = [
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -158,6 +165,7 @@ const tests = [
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
 
@@ -173,6 +181,7 @@ const tests = [
       methodArgValues: ["0x45784578"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
   {
@@ -198,14 +207,43 @@ const tests = [
       methodArgValues: ["1"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
+      mimeType: 'text/html',
     }
   },
 
-
-
-
+  // Multiple args
   {
-    name: "MIME specification",
+    name: "Multiple args: specified types",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!1/uint256!2",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenHTML",
+      methodArgTypes: ['string', 'uint256'],
+      methodArgValues: ["1", 2],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false,
+      mimeType: 'text/html',
+    }
+  },
+  {
+    name: "Multiple args: specified types and autodetection",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!1a/2/uniswap.eth",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenHTML",
+      methodArgTypes: ['string', 'uint256', 'address'],
+      methodArgValues: ["1a", 2, "0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false,
+      mimeType: 'text/html',
+    }
+  },
+
+  // MIME
+  {
+    name: "MIME: extension specified",
     url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1.svg",
     expectedResult: {
       mode: "auto",
@@ -215,11 +253,43 @@ const tests = [
       methodArgValues: ["1.svg"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false, 
-      mimeType: 'image/svg+xml'
+      mimeType: 'image/svg+xml',
     }
   },
   {
-    name: "returns bytes as JSON",
+    name: "MIME: unknown extension specified",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1.ploua",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenSVG",
+      methodArgTypes: ['bytes'],
+      methodArgValues: ["1.ploua"],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false, 
+      mimeType: 'text/html',
+    }
+  },
+  {
+    name: "MIME: Combine with multiple args",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1/string!2.svg",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenHTML",
+      methodArgTypes: ['uint256', 'string'],
+      methodArgValues: [1, "2.svg"],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false,
+      mimeType: 'image/svg+xml',
+    }
+  },
+
+
+
+  // JSON return
+  {
+    name: "JSON return: no types",
     url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/1?returns=()",
     expectedResult: {
       mode: "auto",
@@ -229,10 +299,11 @@ const tests = [
       methodArgValues: [1],
       methodReturnTypes: ['bytes'],
       methodReturnJsonEncode: true,
+      mimeType: 'application/json',
     }
   },
   {
-    name: "returns multiple arguments as JSON",
+    name: "JSON return: types specified",
     url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/50?returns=(uint256,uint256)",
     expectedResult: {
       mode: "auto",
@@ -242,8 +313,32 @@ const tests = [
       methodArgValues: [2, 50],
       methodReturnTypes: ['uint256', 'uint256'],
       methodReturnJsonEncode: true,
+      mimeType: 'application/json',
     }
   },
+  // TODO:
+  // {
+  //   name: "JSON return: invalid types specified",
+  //   url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/50?returns=(uint42)",
+  //   expectedException: "xxx",
+  // },
+  {
+    name: "JSON return: Combine with multiple args and MIME",
+    url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/string!50.svg?returns=(uint256,uint256)",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "levelAndTile",
+      methodArgTypes: ['uint256', 'string'],
+      methodArgValues: [2, "50.svg"],
+      methodReturnTypes: ['uint256', 'uint256'],
+      methodReturnJsonEncode: true,
+      mimeType: 'application/json',
+    }
+  },
+
+  // To be resolved on protocol side:
+  // - /tokenSVG/1.svg : Send "1" and mime=SVG (pending ?mime=)
 ]
 
 for(let i = 0; i < tests.length; i++) {
@@ -257,14 +352,7 @@ for(let i = 0; i < tests.length; i++) {
       let parsedUrl = await parseUrl(tst.url)
       // Compare expectedResult on 2 levels
       for (const [fieldName, fieldValue] of Object.entries(tst.expectedResult)) {
-        if(typeof fieldValue == "object") {
-          for (const [fieldName2, fieldValue2] of Object.entries(tst.expectedResult[fieldName])) {
-            expect(parsedUrl[fieldName][fieldName2]).toEqual(fieldValue2);
-          }
-        }
-        else {
-          expect(parsedUrl[fieldName]).toEqual(fieldValue);
-        }
+        expect(parsedUrl[fieldName]).toEqual(fieldValue);
       }
     }
   });
