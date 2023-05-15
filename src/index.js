@@ -1,5 +1,5 @@
 let web3Chains = require('viem/chains');
-const { createPublicClient, http } = require('viem');
+const { createPublicClient, http, decodeAbiParameters } = require('viem');
 
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
@@ -48,15 +48,16 @@ async function parseUrl(url) {
 
   // Web3 network : if provided in the URL, use it, or mainnet by default
   let web3chain = web3Chains["mainnet"];
+  result.chainId = 1
   // Was the network id specified?
-  if(urlMainParts.chaindId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
+  if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
     let web3ChainId = parseInt(urlMainParts.chainId);
     // Find the matching chain
     web3chain = Object.values(web3Chains).find(chain => chain.id == web3ChainId)
     if(web3chain == null) {
-      throw new Error('No chain found for id ' + web3ChainId);
-      return;        
+      throw new Error('No chain found for id ' + web3ChainId);       
     }
+    result.chainId = web3ChainId
   }
 
 
@@ -133,7 +134,6 @@ async function parseUrl(url) {
   let resolveModeAsString = Buffer.from(resolveMode.substr(2), "hex").toString().replace(/\0/g, '');
   if(['', 'auto', 'manual'].indexOf(resolveModeAsString) === -1) {
     throw new Error("web3 resolveMode '" + resolveModeAsString + "' is not supported")
-    return;
   }
   if(resolveModeAsString == "manual") {
     result.mode = 'manual';
@@ -156,17 +156,86 @@ async function parseUrl(url) {
  * Execute a parsed web3:// URL from parseUrl()
  */
 async function fetchParsedUrl(parsedUrl) {
+  // Find the matching chain
+  web3chain = Object.values(web3Chains).find(chain => chain.id == parsedUrl.chainId)
+  if(web3chain == null) {
+    throw new Error('No chain found for id ' + parsedUrl.chainId);
+  }
 
+  // Prepare the web3 client
+  let web3Client = createPublicClient({
+    chain: web3chain,
+    transport: http(),
+  });
+
+  let output = null;
+  // Raw calldata call
+  if(parsedUrl.contractCallMode == 'calldata') {
+    let rawOutput = await web3Client.call({
+      to: parsedUrl.contractAddress,
+      data: parsedUrl.calldata
+    })
+
+    // Looks like this is what happens when calling non-contracts
+    if(rawOutput.data === undefined) {
+      throw new Error("Looks like the address is not a contract.");
+    }
+
+    rawOutput = decodeAbiParameters([
+        { type: 'bytes' },
+      ],
+      rawOutput.data,
+    )
+
+    output = Buffer.from(rawOutput[0].substr(2), "hex")
+  }
+  // Method call
+  else if(parsedUrl.contractCallMode == 'method') {
+    // Contract definition
+    let abi = [
+      {
+        inputs: parsedUrl.methodArgTypes.map(x => ({type: x})),
+        name: parsedUrl.methodName,
+        // Assuming string output
+        outputs: parsedUrl.methodReturnTypes.map(x => ({type: x})),
+        stateMutability: 'view',
+        type: 'function',
+      },
+    ];
+    let contract = {
+      address: parsedUrl.contractAddress,
+      abi: abi,
+    };
+
+    output = await web3Client.readContract({
+      ...contract,
+      functionName: parsedUrl.methodName,
+      args: parsedUrl.methodArgValues,
+    })
+  }
+
+  if(parsedUrl.methodReturnJsonEncode) {
+    if((output instanceof Array) == false) {
+        output = [output]
+      }
+      output = JSON.stringify(output.map(x => "" + x))
+  }
+
+  let result = {
+    output: output,
+    mimeType: parsedUrl.mimeType
+  }
+  return result;
 }
 
 /**
  * Fetch a web3:// URL
  */
 async function fetchUrl(url) {
-  let parsedUrl = parseUrl(url)
-  let result = fetchParsedUrl(parsedUrl)
+  let parsedUrl = await parseUrl(url)
+  let result = await fetchParsedUrl(parsedUrl)
 
   return result;
 }
 
-module.exports = { parseUrl };
+module.exports = { parseUrl, fetchParsedUrl, fetchUrl };

@@ -350,11 +350,10 @@ for(let i = 0; i < tests.length; i++) {
     }
     else {
       let parsedUrl = await parseUrl(tst.url)
-      // Compare expectedResult on 2 levels
       for (const [fieldName, fieldValue] of Object.entries(tst.expectedResult)) {
         expect(parsedUrl[fieldName]).toEqual(fieldValue);
       }
     }
-  });
+  }, 15000 /* ms of timeout */);
 
 }

@@ -57,6 +57,6 @@ for(let i = 0; i < tests.length; i++) {
         expect(parsedUrl[fieldName]).toEqual(fieldValue);
       }
     }
-  });
+  }, 15000 /* ms of timeout */);
 
 }
