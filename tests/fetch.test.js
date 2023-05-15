@@ -26,6 +26,15 @@ const tests = [
       mimeType: 'application/json',
     }
   },
+  {
+    name: "Auto mode: On goerli, fetch 2 integers",
+    url: "web3://0x76010876050387FA66E28a1883aD73d576D88Bf2:5/levelAndTile/2/50?returns=(uint256,uint256)",
+    expectedResult: {
+      // Bigints : will be returned as string
+      output: JSON.stringify(["1", "36"]),
+      mimeType: 'application/json',
+    }
+  },
 ]
 
 for(let i = 0; i < tests.length; i++) {

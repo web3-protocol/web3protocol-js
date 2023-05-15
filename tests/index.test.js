@@ -11,15 +11,17 @@ const tests = [
     url: "web4://xxxx",
     expectedException: "Bad protocol name",
   }, 
+
+  // Host
   {
-    name: "Check ethereum address",
+    name: "Host: ethereum address",
     url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463",
     expectedResult: {
       contractAddress: "0x5a985f13345e820aa9618826b85f74c3986e1463",
     },
   },
   {
-    name: "Check ENS name",
+    name: "Host: ENS name",
     url: "web3://uniswap.eth",
     expectedResult: {
       contractAddress: "0x1a9C8182C09F50C8318d769245beA52c32BE35BC",
@@ -30,10 +32,45 @@ const tests = [
     },
   },
   {
-    name: "Check wrong ENS name",
+    name: "Host: Unresolving ENS name",
     url: "web3://fsdfzefszfsfsdfsdfefe.eth",
     expectedException: "Failed to resolve domain name fsdfzefszfsfsdfsdfefe.eth",
   },
+
+  // Chain id
+  {
+    name: "Chain id: default",
+    url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463",
+    expectedResult: {
+      chainId: 1,
+    },
+  },
+  {
+    name: "Chain id: specified",
+    url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463:5",
+    expectedResult: {
+      chainId: 5,
+    },
+  },
+  {
+    name: "Chain id: specified, > 65536",
+    url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463:11155111",
+    expectedResult: {
+      chainId: 11155111,
+    },
+  },
+  {
+    name: "Chain id: Bad id not existing",
+    url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463:9989898",
+    expectedException: 'No chain found for id 9989898',
+  },
+  {
+    name: "Chain id: Not a number",
+    url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463:abcd",
+    expectedException: 'Failed basic parsing of the URL',
+  },
+
+  // Modes
   {
     name: "Determine the web3 mode (auto)",
     url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56",
