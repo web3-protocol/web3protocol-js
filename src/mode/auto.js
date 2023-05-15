@@ -87,9 +87,6 @@ let supportedTypes = [
 
 
 async function parseAutoUrl(result, path, web3Client) {
-  // Default: We return as html
-  result.mimeType = 'text/html';
-
   // If "/" is called, call the contract with empty calldata
   if(path === undefined || path == "" || path == "/") {
     result.contractCallMode = 'calldata'

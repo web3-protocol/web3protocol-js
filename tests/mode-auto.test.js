@@ -23,7 +23,7 @@ const tests = [
       methodArgValues: [1],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -47,7 +47,7 @@ const tests = [
       methodArgValues: [1],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
 
@@ -63,7 +63,7 @@ const tests = [
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -87,7 +87,7 @@ const tests = [
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
 
@@ -103,7 +103,7 @@ const tests = [
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -117,7 +117,7 @@ const tests = [
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -151,7 +151,7 @@ const tests = [
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -165,7 +165,7 @@ const tests = [
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
 
@@ -181,7 +181,7 @@ const tests = [
       methodArgValues: ["0x45784578"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -207,7 +207,7 @@ const tests = [
       methodArgValues: ["1"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
 
@@ -223,7 +223,7 @@ const tests = [
       methodArgValues: ["1", 2],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
@@ -237,7 +237,7 @@ const tests = [
       methodArgValues: ["1a", 2, "0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false,
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
 
@@ -267,7 +267,7 @@ const tests = [
       methodArgValues: ["1.ploua"],
       methodReturnTypes: ['string'],
       methodReturnJsonEncode: false, 
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {

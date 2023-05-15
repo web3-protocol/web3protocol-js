@@ -14,7 +14,7 @@ const tests = [
     url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName",
     expectedResult: {
       output: '???',
-      mimeType: 'text/html',
+      mimeType: null,
     }
   },
   {
