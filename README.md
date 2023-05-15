@@ -1,5 +1,5 @@
 # web3protocol
-Parse and execute ERC-4804 web3:// URLs. To be used by [EVM Browser](https://github.com/nand2/evm-browser) to browse web3:// on-chain websites.
+Parse and execute [ERC-4804](https://eips.ethereum.org/EIPS/eip-4804) web3:// URLs. To be used by [EVM Browser](https://github.com/nand2/evm-browser) to browse web3:// on-chain websites.
 
 ### fetchUrl(url)
 
