@@ -2,6 +2,7 @@ let web3Chains = require('viem/chains');
 const { createPublicClient, http } = require('viem');
 
 const { parseManualUrl } = require('./mode/manual');
+const { parseAutoUrl } = require('./mode/auto');
 const { isSupportedDomainName, resolveDomainNameForEIP4804 } = require('./name-service/index')
 
 /**
@@ -20,7 +21,7 @@ async function parseUrl(url) {
     modeArguments: {}
   }
 
-  let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/]+)(:(?<chainId>[1-9][0-9]*))?(?<path>\/.+)?$/)
+  let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/]+)(:(?<chainId>[1-9][0-9]*))?(?<path>\/.*)?$/)
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the URL");
   }
@@ -86,6 +87,51 @@ async function parseUrl(url) {
     else {
       throw new Error('Unresolvable domain name : ' + urlMainParts.hostname + ' : no supported resolvers found in this chain');
     }
+  }
+
+
+  // Determining the web3 mode
+  // 2 modes :
+  // - Auto : we parse the path and arguments and send them
+  // - Manual : we forward all the path & arguments as calldata
+
+  // Default is auto
+  result.mode = "auto"
+
+  // Detect if the contract is manual mode : resolveMode must returns "manual"
+  let resolveMode = '';
+  try {
+    resolveMode = await web3Client.readContract({
+      address: result.contractAddress,
+      abi: [{
+        inputs: [],
+        name: 'resolveMode',
+        outputs: [{type: 'bytes32'}],
+        stateMutability: 'view',
+        type: 'function',
+      }],
+      functionName: 'resolveMode',
+      args: [],
+    })
+  }
+  catch(err) {/** If call to resolveMode fails, we default to auto */}
+
+  let resolveModeAsString = Buffer.from(resolveMode.substr(2), "hex").toString().replace(/\0/g, '');
+  if(['', 'auto', 'manual'].indexOf(resolveModeAsString) === -1) {
+    throw new Error("web3 resolveMode '" + resolveModeAsString + "' is not supported")
+    return;
+  }
+  if(resolveModeAsString == "manual") {
+    result.mode = 'manual';
+  }
+
+
+  // Parse the URL per the selected mode
+  if(result.mode == 'manual') {
+    result.modeArguments = parseManualUrl(urlMainParts.path)
+  }
+  else if(result.mode == 'auto') {
+    result.modeArguments = await parseAutoUrl(urlMainParts.path, web3Client)
   }
 
   return result
