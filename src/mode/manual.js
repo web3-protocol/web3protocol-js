@@ -21,9 +21,8 @@ function parseManualUrl(result, path) {
     }
   }
 
-  // We are sending the decoded path as calldata
-  let decodedPath = decodeURIComponent(path)
-  let callData = "0x" + Buffer.from(decodedPath).toString('hex')
+  // We are sending the path as calldata
+  let callData = "0x" + Buffer.from(path).toString('hex')
 
   result.contractCallMode = 'calldata'
   result.calldata = callData

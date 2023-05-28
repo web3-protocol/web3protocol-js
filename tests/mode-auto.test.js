@@ -337,6 +337,36 @@ const tests = [
     }
   },
 
+  // URI decoding
+  {
+    name: "URI encoding: Decoding of basic encoding",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!%201%3F",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenHTML",
+      methodArgTypes: ['string'],
+      methodArgValues: [" 1?"],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false,
+      mimeType: null,
+    }
+  },
+  {
+    name: "URI encoding: Decoding of utf8 encoding",
+    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenHTML/string!%E2%86%92",
+    expectedResult: {
+      mode: "auto",
+      contractCallMode: 'method',
+      methodName: "tokenHTML",
+      methodArgTypes: ['string'],
+      methodArgValues: ["→"],
+      methodReturnTypes: ['string'],
+      methodReturnJsonEncode: false,
+      mimeType: null,
+    }
+  },
+
   // To be resolved on protocol side:
   // - /tokenSVG/1.svg : Send "1" and mime=SVG (pending ?mime=)
 ]

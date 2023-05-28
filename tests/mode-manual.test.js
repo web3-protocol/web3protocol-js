@@ -41,6 +41,26 @@ const tests = [
       mimeType: 'image/svg+xml',
     }
   },
+  {
+    name: "Manual mode: calldata of path with URI encoded path",
+    url: "web3://0x9A595bc28F1c40ab96247E8157A2b0A6762E7543/view/%201",
+    expectedResult: {
+      mode: "manual",
+      contractCallMode: 'calldata',
+      calldata: "0x2f766965772f25323031", // /view/%201
+      mimeType: 'text/html',
+    }
+  },
+  {
+    name: "Manual mode: calldata of path with URI encoded query",
+    url: "web3://0x9A595bc28F1c40ab96247E8157A2b0A6762E7543/view/1?a=1%26b%3D2",
+    expectedResult: {
+      mode: "manual",
+      contractCallMode: 'calldata',
+      calldata: "0x2f766965772f313f613d312532366225334432", // /view/1?a=1%26b%3D2
+      mimeType: 'text/html',
+    }
+  },
 ]
 
 for(let i = 0; i < tests.length; i++) {
