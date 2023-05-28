@@ -1,5 +1,6 @@
 const { normalize: ensNormalize } = require('viem/ens')
 const { linagee } = require('./linagee.js')
+const { getChainByShortName } = require('../chains/index.js')
 
 // Is it a supported domain name? (ENS, ...)
 const isSupportedDomainName = (domainName, web3chain) => {
@@ -77,7 +78,7 @@ const resolveDomainNameForEIP4804 = async (domainName, web3Client) => {
       // EIP-3770 address
       else if(contentContractTxtParts.length == 2) {
         // Search the chain by its chain short name
-        let chainByShortName = Object.values(chainsJsonFileChains).find(chain => chain.shortName == contentContractTxtParts[0]) || null
+        let chainByShortName = getChainByShortName(contentContractTxtParts[0])
         if(chainByShortName == null) {
           throw new Error("The chain short name of the contentcontract TXT record was not found")
         }

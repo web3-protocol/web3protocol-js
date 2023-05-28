@@ -1,15 +1,21 @@
-let web3Chains = require('viem/chains');
 const { createPublicClient, http, decodeAbiParameters } = require('viem');
 
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
 const { isSupportedDomainName, resolveDomainNameForEIP4804 } = require('./name-service/index')
+const { createChainForViem } = require('./chains/index.js')
 
 /**
  * For a given web3:// URL, parse it into components necessary to make the call.
  * Can throw exceptions in case of bad URL, or error during optional RPC calls (name resolution, ...)
  */
-async function parseUrl(url) {
+async function parseUrl(url, opts) {
+  // Option defaults
+  opts = opts || {}
+  opts = {...{
+      chains: [],
+    }, ...opts}
+
   let result = {
     contractAddress: null,
     nameResolution: {
@@ -47,18 +53,14 @@ async function parseUrl(url) {
 
 
   // Web3 network : if provided in the URL, use it, or mainnet by default
-  let web3chain = web3Chains["mainnet"];
-  result.chainId = 1
+  let web3chain = createChainForViem(1, opts.chains)
   // Was the network id specified?
   if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
     let web3ChainId = parseInt(urlMainParts.chainId);
-    // Find the matching chain
-    web3chain = Object.values(web3Chains).find(chain => chain.id == web3ChainId)
-    if(web3chain == null) {
-      throw new Error('No chain found for id ' + web3ChainId);       
-    }
-    result.chainId = web3ChainId
+    // Find the matching chain. Will throw an error if not found
+    web3chain = createChainForViem(web3ChainId, opts.chains)
   }
+  result.chainId = web3chain.id
 
 
   // Prepare the web3 client
@@ -84,14 +86,16 @@ async function parseUrl(url) {
         resolutionInfos = await resolveDomainNameForEIP4804(urlMainParts.hostname, web3Client)
       }
       catch(err) {
-        throw new Error('Failed to resolve domain name ' + urlMainParts.hostname);
+        throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
       }
 
       // Set contractAddress address
       result.contractAddress = resolutionInfos.address
-      // We got an address on another chain? Update the web3Client
+      // We got an address on another chain? Update the chainId and the web3Client
       if(resolutionInfos.chainId) {
-        web3chain = Object.values(web3Chains).find(chain => chain.id == resolutionInfos.chainId)
+        result.chainId = resolutionInfos.chainId
+
+        web3chain = createChainForViem(resolutionInfos.chainId, opts.chains)
         web3Client = createPublicClient({
           chain: web3chain,
           transport: http(),
@@ -155,9 +159,15 @@ async function parseUrl(url) {
 /**
  * Execute a parsed web3:// URL from parseUrl()
  */
-async function fetchParsedUrl(parsedUrl) {
+async function fetchParsedUrl(parsedUrl, opts) {
+  // Option defaults
+  opts = opts || {}
+  opts = {...{
+      chains: [],
+    }, ...opts}
+
   // Find the matching chain
-  web3chain = Object.values(web3Chains).find(chain => chain.id == parsedUrl.chainId)
+  web3chain = createChainForViem(parsedUrl.chainId, opts.chains)
   if(web3chain == null) {
     throw new Error('No chain found for id ' + parsedUrl.chainId);
   }
@@ -231,9 +241,10 @@ async function fetchParsedUrl(parsedUrl) {
 /**
  * Fetch a web3:// URL
  */
-async function fetchUrl(url) {
-  let parsedUrl = await parseUrl(url)
-  let result = await fetchParsedUrl(parsedUrl)
+async function fetchUrl(url, opts) {
+
+  let parsedUrl = await parseUrl(url, opts)
+  let result = await fetchParsedUrl(parsedUrl, opts)
 
   return result;
 }

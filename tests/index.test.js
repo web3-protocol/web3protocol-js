@@ -29,12 +29,25 @@ const tests = [
         chainId: 1,
         resolvedName: "uniswap.eth",
       },
+      chainId: 1,
     },
   },
   {
     name: "Host: Unresolving ENS name",
     url: "web3://fsdfzefszfsfsdfsdfefe.eth",
     expectedException: "Failed to resolve domain name fsdfzefszfsfsdfsdfefe.eth",
+  },
+  {
+    name: "Host: ENS name with ERC-6821 mapping",
+    url: "web3://vitalikblog.eth",
+    expectedResult: {
+      contractAddress: "0xe4ba0e245436b737468c206ab5c8f4950597ab7f",
+      nameResolution: {
+        chainId: 1,
+        resolvedName: "vitalikblog.eth",
+      },
+      chainId: 42170,
+    },
   },
 
   // Chain id
@@ -62,7 +75,7 @@ const tests = [
   {
     name: "Chain id: Bad id not existing",
     url: "web3://0x5a985f13345e820aa9618826b85f74c3986e1463:9989898",
-    expectedException: 'No chain found for id 9989898',
+    expectedException: 'Chain not found for id 9989898',
   },
   {
     name: "Chain id: Not a number",
