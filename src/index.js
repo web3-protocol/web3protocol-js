@@ -45,7 +45,7 @@ async function parseUrl(url, opts) {
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the URL");
   }
-  urlMainParts = matchResult.groups
+  let urlMainParts = matchResult.groups
 
   if(urlMainParts.protocol !== "web3") {
     throw new Error("Bad protocol name");
@@ -232,6 +232,7 @@ async function fetchParsedUrl(parsedUrl, opts) {
   }
 
   let result = {
+    parsedUrl: parsedUrl,
     output: output,
     mimeType: parsedUrl.mimeType
   }
