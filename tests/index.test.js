@@ -49,6 +49,18 @@ const tests = [
       chainId: 42170,
     },
   },
+  {
+    name: "Host: Linagee name",
+    url: "web3://ecdn.og",
+    expectedResult: {
+      contractAddress: "0x4F53Eae17346d6c0f96215Af157c7F8e093E17F1",
+      nameResolution: {
+        chainId: 1,
+        resolvedName: "ecdn.og",
+      },
+      chainId: 1,
+    },
+  },
 
   // Chain id
   {
