@@ -179,6 +179,45 @@ async function parseAutoUrl(result, path, web3Client) {
       }
     }
   }
+
+  // ERC-7087 : Handle the mime override
+  // Only if ?returns= was not present
+  if(result.methodReturnJsonEncode == false) {
+    // Several of these could be there, we use the last one
+    let mimeFieldName = null;
+    let mimeFieldValue = null;
+
+    for (const [fieldName, fieldValue] of searchParams.entries()) {
+      if(['mime.content', 'mime.type'/*, 'mime.dataurl'*/].indexOf(fieldName) != -1) {
+        mimeFieldName = fieldName
+        mimeFieldValue = fieldValue
+      }
+    }
+
+    // Standard MIME
+    if(mimeFieldName == "mime.content") {
+      if(/^[^\/]+\/[^\/]+(,[^=]+=[^=]+)?$/.test(mimeFieldValue) == false) {
+        throw new Error("Invalid MIME type: " + mimeFieldValue)
+      }
+      result.mimeType = mimeFieldValue
+    }
+    // Filename extension
+    else if(mimeFieldName == "mime.type") {
+      if(/^[a-zA-Z0-9]+$/.test(mimeFieldValue) == false) {
+        throw new Error("Invalid filename extension: " + mimeFieldValue)
+      }
+      let matchingMimeType = mime.lookup(mimeFieldValue)
+      if(matchingMimeType == false) {
+        throw new Error("No MIME type found for filename extension: " + mimeFieldValue)
+      }
+      result.mimeType = matchingMimeType
+    }
+    // Dataurl support to be added later
+    // // The result is a data url, we will extract the mime type from there
+    // else if(mimeFieldName == "mime.dataurl") {
+    //   result.methodReturnIsDataUrl = true
+    // }
+  }
 }
 
 module.exports = { parseAutoUrl }

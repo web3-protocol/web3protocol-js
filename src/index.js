@@ -36,8 +36,15 @@ async function parseUrl(url, opts) {
     methodArgTypes: [],
     methodArgValues: [],
     methodReturnTypes: ['string'],
+    // If true, json encode the result var(s) and set content type to JSON
     methodReturnJsonEncode: false,
+    // Dataurl support to be added later: 
+    // // If true, the result is considered to be a data URL : we will extract the actual data
+    // // and the mime type from it.
+    // // Cannot be true if methodReturnJsonEncode is set to true.
+    // methodReturnIsDataUrl: false,
     // The output shall be marked as being this mimetype
+    // Is ignored if : methodReturnJsonEncode == true or methodReturnIsDataUrl == true
     mimeType: null
   }
 
