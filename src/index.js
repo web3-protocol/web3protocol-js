@@ -174,7 +174,7 @@ async function fetchParsedUrl(parsedUrl, opts) {
     }, ...opts}
 
   // Find the matching chain
-  web3chain = createChainForViem(parsedUrl.chainId, opts.chains)
+  let web3chain = createChainForViem(parsedUrl.chainId, opts.chains)
   if(web3chain == null) {
     throw new Error('No chain found for id ' + parsedUrl.chainId);
   }
