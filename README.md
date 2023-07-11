@@ -1,4 +1,7 @@
 # web3protocol
+
+[![npm version](https://badge.fury.io/js/web3protocol.svg)](https://www.npmjs.com/package/web3protocol)
+
 Parse and execute [ERC-4804](https://eips.ethereum.org/EIPS/eip-4804) web3:// URLs. Used by [EVM Browser](https://github.com/nand2/evm-browser) to browse web3:// on-chain websites.
 
 ### fetchUrl(url, opts)
