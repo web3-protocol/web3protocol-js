@@ -36,7 +36,10 @@ Taking into argument the output of ``parseUrl()``, it will execute it and fetch 
 - [ERC-6821](https://eips.ethereum.org/EIPS/eip-6821) : ENS resolution : support for the ``contentcontract`` TXT field to point to a contract in another chain
 - Not standard : Linagee .og domain names
 
+## Partially implemented features
+
+- [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) (pending) : Auto mode : Add more flexibility to specify the MIME type. The dataurl support is not done yet.
+
 ## Upcoming features
 
-- [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) : Auto mode : Add more flexibility to specify the MIME type
-- [ERC-6944](https://github.com/ethereum/EIPs/pull/6944) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
+- [ERC-6944](https://github.com/ethereum/EIPs/pull/6944) (pending) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
