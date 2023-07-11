@@ -12,7 +12,7 @@ function parseManualUrl(result, path) {
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the path");
   }
-  pathname = matchResult.groups.pathname
+  let pathname = matchResult.groups.pathname
   let pathnameParts = pathname.split('.')
   if(pathnameParts.length > 1) {
     let specifiedMimeType = mime.lookup(pathnameParts[pathnameParts.length - 1])

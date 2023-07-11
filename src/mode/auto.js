@@ -103,9 +103,9 @@ async function parseAutoUrl(result, path, web3Client) {
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the path");
   }
-  pathname = matchResult.groups.pathname
+  let pathname = matchResult.groups.pathname
   let pathnameParts = pathname.split('/')  
-  searchParams = new URLSearchParams(matchResult.groups.searchParams);
+  let searchParams = new URLSearchParams(matchResult.groups.searchParams);
 
   // Determine mime, if set
   let argValueParts = pathnameParts[pathnameParts.length - 1].split('.')
@@ -126,7 +126,7 @@ async function parseAutoUrl(result, path, web3Client) {
     let detectedType = null;
 
     // First we look for an explicit cast
-    for(j = 0; j < supportedTypes.length; j++) {
+    for(let j = 0; j < supportedTypes.length; j++) {
       if(argValue.startsWith(supportedTypes[j].type + '!')) {
         argValue = argValue.split('!').slice(1).join('!')
         try {
@@ -142,7 +142,7 @@ async function parseAutoUrl(result, path, web3Client) {
 
     // Next, if no explicit cast, try to detect
     if(detectedType == null) {
-      for(j = 0; j < supportedTypes.length; j++) {
+      for(let j = 0; j < supportedTypes.length; j++) {
         if(supportedTypes[j].autoDetectable) {
           try {
             argValue = await supportedTypes[j].parse(argValue, web3Client)
