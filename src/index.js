@@ -13,6 +13,8 @@ async function parseUrl(url, opts) {
   // Option defaults
   opts = opts || {}
   opts = {...{
+      useEmbeddedChainRPCs: true,
+      // Will add or override a chain RPC definition
       chains: [],
     }, ...opts}
 
@@ -60,12 +62,12 @@ async function parseUrl(url, opts) {
 
 
   // Web3 network : if provided in the URL, use it, or mainnet by default
-  let web3chain = createChainForViem(1, opts.chains)
+  let web3chain = createChainForViem(1, opts.useEmbeddedChainRPCs, opts.chains)
   // Was the network id specified?
   if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
     let web3ChainId = parseInt(urlMainParts.chainId);
     // Find the matching chain. Will throw an error if not found
-    web3chain = createChainForViem(web3ChainId, opts.chains)
+    web3chain = createChainForViem(web3ChainId, opts.useEmbeddedChainRPCs, opts.chains)
   }
   result.chainId = web3chain.id
 
@@ -102,7 +104,7 @@ async function parseUrl(url, opts) {
       if(resolutionInfos.chainId) {
         result.chainId = resolutionInfos.chainId
 
-        web3chain = createChainForViem(resolutionInfos.chainId, opts.chains)
+        web3chain = createChainForViem(resolutionInfos.chainId, opts.useEmbeddedChainRPCs, opts.chains)
         web3Client = createPublicClient({
           chain: web3chain,
           transport: http(),
@@ -174,7 +176,7 @@ async function fetchParsedUrl(parsedUrl, opts) {
     }, ...opts}
 
   // Find the matching chain
-  let web3chain = createChainForViem(parsedUrl.chainId, opts.chains)
+  let web3chain = createChainForViem(parsedUrl.chainId, opts.useEmbeddedChainRPCs, opts.chains)
   if(web3chain == null) {
     throw new Error('No chain found for id ' + parsedUrl.chainId);
   }

@@ -1,8 +1,15 @@
 const chainListJsonFileChains = require('./chainlist.js')
 let viemChains = require('viem/chains');
 
-function getChainList(chainOverrides) {
+function getChainIdNetworkChainList(useEmbeddedChainRPCs, chainOverrides) {
   let chainList = chainListJsonFileChains
+
+  // If asked, erase all embedded RPC URLs
+  if(useEmbeddedChainRPCs == false) {
+    for(let i = 0; i < chainList.length; i++) {
+      chainList[i].rpc = []
+    }
+  }
 
   // Process the chain overrides
   chainOverrides.forEach(chainOverride => {
@@ -26,6 +33,7 @@ function getChainList(chainOverrides) {
   return chainList
 }
 
+// Warn: This does not have the overriden RPCs; do not use to get RPCs
 function getChainByShortName(shortName) {
   const result = Object.values(chainListJsonFileChains).find(chain => chain.shortName == shortName)
 
@@ -39,19 +47,28 @@ function getChainByShortName(shortName) {
 
 
 // Create a web3 client in the format accepted by viem.sh
-function createChainForViem(chainId, chainOverrides) {
+function createChainForViem(chainId, useEmbeddedChainRPCs, chainOverrides) {
   // Find the chain in the chainList inventory
-  const chainListChain = Object.values(getChainList(chainOverrides)).find(chain => chain.chainId == chainId)
+  const chainListChain = Object.values(getChainIdNetworkChainList(useEmbeddedChainRPCs, chainOverrides)).find(chain => chain.chainId == chainId)
   if(chainListChain == undefined) {
     throw new Error("Chain not found for id " + chainId)
   }
   
-  // Find the chain in the viem.sh inventory
+  // If the chain is available in the viem.sh inventory, we use it as it contains better default
+  // RPC URLs
   const viemChain = Object.values(viemChains).find(viemChain => viemChain.id == chainId) || null
   // If we found a chain from viem.sh, use it
   let web3chain = null
   if(viemChain) {
     web3chain = viemChain;
+
+    // If asked, erase the default RPCs
+    if(useEmbeddedChainRPCs == false) {
+      web3chain.rpcUrls = {
+        public: { http: [] },
+        default: { http: [] },
+      }
+    }
 
     // If there is RPC override, apply it
     const chainOverride = chainOverrides.find(chainOverride => chainOverride.id == web3chain.id)
