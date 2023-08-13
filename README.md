@@ -39,7 +39,8 @@ Taking into argument the output of ``parseUrl()``, it will execute it and fetch 
 ## Implemented features
 
 - [ERC-4804](https://eips.ethereum.org/EIPS/eip-4804) : the base web3:// protocol with auto and manual mode, basic ENS support
-- [ERC-6821](https://eips.ethereum.org/EIPS/eip-6821) : ENS resolution : support for the ``contentcontract`` TXT field to point to a contract in another chain
+- [ERC-6821](https://eips.ethereum.org/EIPS/eip-6821) (draft) : ENS resolution : support for the ``contentcontract`` TXT field to point to a contract in another chain
+- [ERC-6944](https://eips.ethereum.org/EIPS/eip-6944) (draft) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
 - Not standard : Linagee .og domain names
 
 ## Partially implemented features
@@ -48,4 +49,3 @@ Taking into argument the output of ``parseUrl()``, it will execute it and fetch 
 
 ## Upcoming features
 
-- [ERC-6944](https://github.com/ethereum/EIPs/pull/6944) (pending) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side

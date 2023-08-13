@@ -96,7 +96,7 @@ async function parseAutoUrl(result, path, web3Client) {
 
   result.contractCallMode = 'method';
   // Default return type
-  result.methodReturnTypes = ['string']
+  result.methodReturn = [{type: 'string'}]
 
   // Separate path from search params
   let matchResult = path.match(/^(?<pathname>[^?]*)([?](?<searchParams>.*))?$/)
@@ -112,7 +112,7 @@ async function parseAutoUrl(result, path, web3Client) {
   if(argValueParts.length > 1) {
     let specifiedMimeType = mime.lookup(argValueParts[argValueParts.length - 1])
     if(specifiedMimeType != false) {
-      result.mimeType = specifiedMimeType
+      result.contractReturnProcessingOptions.mimeType = specifiedMimeType
     }
   }
 
@@ -156,7 +156,7 @@ async function parseAutoUrl(result, path, web3Client) {
     }
 
     // Finally, save the args and its type
-    result.methodArgTypes.push(detectedType ? detectedType : "bytes")
+    result.methodArgs.push(detectedType ? {type: detectedType} : {type: "bytes"})
     result.methodArgValues.push(argValue)
   }
 
@@ -164,25 +164,25 @@ async function parseAutoUrl(result, path, web3Client) {
   let returnsParam = searchParams.get('returns')
   if(returnsParam && returnsParam.length >= 2) {
     // When we have a return definition, we returns everything as JSON
-    result.methodReturnJsonEncode = true;
-    result.mimeType = 'application/json'
+    result.contractReturnProcessing = 'jsonEncode';
+    result.contractReturnProcessingOptions = {}
 
     returnsParamParts = returnsParam.substr(1, returnsParam.length - 2).split(',').map(returnType => returnType.trim()).filter(x => x != '')
 
     if(returnsParamParts == 0) {
-      result.methodReturnTypes = ['bytes']
+      result.methodReturn = [{type: 'bytes'}]
     }
     else {
-      result.methodReturnTypes = []
+      result.methodReturn = []
       for(let i = 0; i < returnsParamParts.length; i++) {
-        result.methodReturnTypes.push(returnsParamParts[i])
+        result.methodReturn.push({type: returnsParamParts[i]})
       }
     }
   }
 
   // ERC-7087 : Handle the mime override
   // Only if ?returns= was not present
-  if(result.methodReturnJsonEncode == false) {
+  if(result.contractReturnProcessing == 'firstValue') {
     // Several of these could be there, we use the last one
     let mimeFieldName = null;
     let mimeFieldValue = null;
@@ -199,7 +199,7 @@ async function parseAutoUrl(result, path, web3Client) {
       if(/^[^\/]+\/[^\/]+(,[^=]+=[^=]+)?$/.test(mimeFieldValue) == false) {
         throw new Error("Invalid MIME type: " + mimeFieldValue)
       }
-      result.mimeType = mimeFieldValue
+      result.contractReturnProcessingOptions.mimeType = mimeFieldValue
     }
     // Filename extension
     else if(mimeFieldName == "mime.type") {
@@ -210,7 +210,7 @@ async function parseAutoUrl(result, path, web3Client) {
       if(matchingMimeType == false) {
         throw new Error("No MIME type found for filename extension: " + mimeFieldValue)
       }
-      result.mimeType = matchingMimeType
+      result.contractReturnProcessingOptions.mimeType = matchingMimeType
     }
     // Dataurl support to be added later
     // // The result is a data url, we will extract the mime type from there

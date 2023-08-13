@@ -7,7 +7,7 @@ function parseManualUrl(result, path) {
   }
 
   // Mime type : by default HTML, but the extension of path can override
-  result.mimeType = 'text/html';
+  result.contractReturnProcessingOptions.mimeType = 'text/html';
   let matchResult = path.match(/^(?<pathname>[^?]*)([?](?<searchParams>.*))?$/)
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the path");
@@ -17,7 +17,7 @@ function parseManualUrl(result, path) {
   if(pathnameParts.length > 1) {
     let specifiedMimeType = mime.lookup(pathnameParts[pathnameParts.length - 1])
     if(specifiedMimeType != false) {
-      result.mimeType = specifiedMimeType
+      result.contractReturnProcessingOptions.mimeType = specifiedMimeType
     }
   }
 
