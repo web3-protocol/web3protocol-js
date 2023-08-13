@@ -1,6 +1,6 @@
 {
   "name": "web3protocol",
-  "version": "0.1.3",
+  "version": "0.2.0",
   "description": "Parse and execute ERC-4804 web3:// URLs",
   "main": "src/index.js",
   "author": "nand2",
