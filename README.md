@@ -43,9 +43,6 @@ Taking into argument the output of ``parseUrl()``, it will execute it and fetch 
 - [ERC-6944](https://eips.ethereum.org/EIPS/eip-6944) (draft) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
 - Not standard : Linagee .og domain names
 
-## Partially implemented features
-
-- [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) (pending) : Auto mode : Add more flexibility to specify the MIME type. The dataurl support is not done yet.
-
 ## Upcoming features
 
+- [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) (pending) : Auto mode : Add more flexibility to specify the MIME type.

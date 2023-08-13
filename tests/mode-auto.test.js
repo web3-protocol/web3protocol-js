@@ -286,49 +286,49 @@ const tests = [
   },
 
   // MIME : ERC-7087 extension
-  {
-    name: "MIME (ERC-7087): mime type specified",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.content=image%2Fsvg%2Bxml",
-    expectedResult: {
-      mode: "auto",
-      contractCallMode: 'method',
-      methodName: "tokenSVG",
-      methodArgs: [{type: 'uint256'}],
-      methodArgValues: [1],
-      methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue', 
-      contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
-    }
-  },
-  {
-    name: "MIME (ERC-7087): Invalid mime type specified",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.content=xoxo",
-    expectedException: "Invalid MIME type: xoxo",
-  },
-  {
-    name: "MIME (ERC-7087): filename extension specified",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=svg",
-    expectedResult: {
-      mode: "auto",
-      contractCallMode: 'method',
-      methodName: "tokenSVG",
-      methodArgs: [{type: 'uint256'}],
-      methodArgValues: [1],
-      methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue', 
-      contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
-    }
-  },
-  {
-    name: "MIME (ERC-7087): Invalid filename extension specified",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=%2F%2F",
-    expectedException: "Invalid filename extension: //",
-  },
-  {
-    name: "MIME (ERC-7087): Non-existing filename extension specified",
-    url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=abcdefg",
-    expectedException: "No MIME type found for filename extension: abcdefg",
-  },
+  // {
+  //   name: "MIME (ERC-7087): mime type specified",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.content=image%2Fsvg%2Bxml",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     contractCallMode: 'method',
+  //     methodName: "tokenSVG",
+  //     methodArgs: [{type: 'uint256'}],
+  //     methodArgValues: [1],
+  //     methodReturn: [{type: 'string'}],
+  //     contractReturnProcessing: 'firstValue', 
+  //     contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
+  //   }
+  // },
+  // {
+  //   name: "MIME (ERC-7087): Invalid mime type specified",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.content=xoxo",
+  //   expectedException: "Invalid MIME type: xoxo",
+  // },
+  // {
+  //   name: "MIME (ERC-7087): filename extension specified",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=svg",
+  //   expectedResult: {
+  //     mode: "auto",
+  //     contractCallMode: 'method',
+  //     methodName: "tokenSVG",
+  //     methodArgs: [{type: 'uint256'}],
+  //     methodArgValues: [1],
+  //     methodReturn: [{type: 'string'}],
+  //     contractReturnProcessing: 'firstValue', 
+  //     contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
+  //   }
+  // },
+  // {
+  //   name: "MIME (ERC-7087): Invalid filename extension specified",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=%2F%2F",
+  //   expectedException: "Invalid filename extension: //",
+  // },
+  // {
+  //   name: "MIME (ERC-7087): Non-existing filename extension specified",
+  //   url: "web3://0x4e1f41613c9084fdb9e34e11fae9412427480e56/tokenSVG/1?mime.type=abcdefg",
+  //   expectedException: "No MIME type found for filename extension: abcdefg",
+  // },
 
 
   // JSON return
