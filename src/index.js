@@ -5,6 +5,7 @@ const { parseAutoUrl } = require('./mode/auto');
 const { parse5219Url } = require('./mode/5219');
 const { isSupportedDomainName, resolveDomainNameForEIP4804 } = require('./name-service/index')
 const { createChainForViem } = require('./chains/index.js')
+const JSONbig = require('json-bigint');
 
 /**
  * For a given web3:// URL, parse it into components necessary to make the call.
@@ -255,7 +256,8 @@ async function fetchParsedUrl(parsedUrl, opts) {
   } 
   else if(parsedUrl.contractReturnProcessing == 'jsonEncode') {
     output = ((contractReturn instanceof Array) == false) ? [contractReturn] : contractReturn
-    output = JSON.stringify(output.map(x => "" + x))
+    output = JSONbig.stringify(output)
+    output = Buffer.from(output)
     httpHeaders['Content-Type'] = 'application/json'
   }
   else if(parsedUrl.contractReturnProcessing == 'erc5219') {
