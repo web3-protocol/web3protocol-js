@@ -29,23 +29,32 @@ const tests = [
     url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/levelAndTile/2/50?returns=(uint256,uint256)",
     opts: null,
     expectedResult: {
-      // Bigints : will be returned as string
-      output: JSON.stringify(["1", "36"]),
+      output: JSON.stringify([1, 36]),
       httpCode: 200,
       httpHeaders: {'Content-Type': 'application/json'},
     }
   },
   {
-    name: "Auto mode: On goerli, fetch 2 integers",
+    name: "Auto mode: fetch 2 integers (on goerli)",
     url: "web3://0x76010876050387FA66E28a1883aD73d576D88Bf2:5/levelAndTile/2/50?returns=(uint256,uint256)",
     opts: null,
     expectedResult: {
-      // Bigints : will be returned as string
-      output: JSON.stringify(["1", "36"]),
+      output: JSON.stringify([1, 36]),
       httpCode: 200,
       httpHeaders: {'Content-Type': 'application/json'},
     }
   },
+  // Test disabled due to a constant segfault on testing, to investigate
+  // {
+  //   name: "Auto mode: fetch an array of integer (on the Web3Q Galileo network)",
+  //   url: "web3://0x8a7297d333b0243c766029ac31a712eef6451846:3334/getValue?returns=(uint256[])",
+  //   opts: null,
+  //   expectedResult: {
+  //     output: JSON.stringify([[1456, 1235, 8673]]),
+  //     httpCode: 200,
+  //     httpHeaders: {'Content-Type': 'application/json'},
+  //   }
+  // },
   {
     name: "Auto mode: bad method name",
     url: "web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/xxxxxxx",

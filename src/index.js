@@ -255,7 +255,14 @@ async function fetchParsedUrl(parsedUrl, opts) {
     }
   } 
   else if(parsedUrl.contractReturnProcessing == 'jsonEncode') {
-    output = ((contractReturn instanceof Array) == false) ? [contractReturn] : contractReturn
+    if(parsedUrl.contractCallMode == 'method' && parsedUrl.methodReturn.length > 1) {
+      // 2+ var returned? It's already an array
+      output = contractReturn
+    }
+    else {
+      // 1 var returned? The plain value is returned, put it in an array
+      output = [contractReturn]
+    }
     output = JSONbig.stringify(output)
     output = Buffer.from(output)
     httpHeaders['Content-Type'] = 'application/json'
