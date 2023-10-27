@@ -1,15 +1,26 @@
-const { createPublicClient, http, decodeAbiParameters } = require('viem');
+const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes } = require('viem');
 
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
 const { parse5219Url } = require('./mode/5219');
-const { isSupportedDomainName, resolveDomainNameForEIP4804 } = require('./name-service/index')
+const { getEligibleDomainNameResolver, resolveDomainNameForEIP4804 } = require('./name-service/index')
 const { createChainForViem } = require('./chains/index.js')
-const JSONbig = require('json-bigint');
+
 
 /**
- * For a given web3:// URL, parse it into components necessary to make the call.
- * Can throw exceptions in case of bad URL, or error during optional RPC calls (name resolution, ...)
+ * Fetch a web3:// URL
+ */
+async function fetchUrl(url, opts) {
+
+  let parsedUrl = await parseUrl(url, opts)
+  let contractReturn = await fetchContractReturn(parsedUrl, opts)
+  let result = await processContractReturn(parsedUrl, contractReturn)
+
+  return result;
+}
+
+/**
+ * Step 1 : Parse the URL and determine how we are going to call the main contract.
  */
 async function parseUrl(url, opts) {
   // Option defaults
@@ -23,11 +34,12 @@ async function parseUrl(url, opts) {
   let result = {
     contractAddress: null,
     nameResolution: {
+      resolver: null,
       chainId: null,
       resolvedName: null,
     },
     chainId: null,
-    // Web3 mode: 'auto', 'manual' or '5219'
+    // Web3 mode: 'auto', 'manual' or 'resourceRequest'
     mode: null,
     // How do we call the smartcontract
     // 'calldata' : We send the specified calldata
@@ -41,25 +53,27 @@ async function parseUrl(url, opts) {
     methodArgValues: [],
     methodReturn: [{type: 'string'}],
     // Enum, possibilities are:
-    // - firstValue: Will return the first value of the result
-    // - jsonEncode: Will json-encode the entries of the result, and return it as a single string
+    // - decodeABIEncodedBytes: Will return the first value of the result
+    // - jsonEncodeRawBytes: Will JSON-encode the raw bytes of the returned data
+    // - jsonEncodeValues: Will JSON-encode the entries of the result, and return it as a single string
     // - dataUrl: Will parse the result as a data URL
     // - erc5219: Will parse the result following the ERC-5219 spec
-    contractReturnProcessing: 'firstValue',
+    contractReturnProcessing: 'decodeABIEncodedBytes',
     contractReturnProcessingOptions: {
-      // If contractReturnProcessing == 'firstValue', specify the mime type to use on the 
+      // If contractReturnProcessing == 'decodeABIEncodedBytes', specify the mime type to use on the 
       // Content-Type HTTP header
       mimeType: null
     },
   }
 
-  let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/]+)(:(?<chainId>[1-9][0-9]*))?(?<path>\/.*)?$/)
+  let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?]+)(:(?<chainId>[1-9][0-9]*))?(?<path>.*)?$/)
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the URL");
   }
   let urlMainParts = matchResult.groups
 
-  if(urlMainParts.protocol !== "web3") {
+  // Check protocol name
+  if(["web3", "w3"].includes(urlMainParts.protocol) == false) {
     throw new Error("Bad protocol name");
   }
 
@@ -82,13 +96,15 @@ async function parseUrl(url, opts) {
 
   // Contract address / Domain name
   // Is the hostname an ethereum address? 
-  if(/^0x[0-9a-fA-F]{40}/.test(urlMainParts.hostname)) {
+  if(/^0x[0-9a-fA-F]{40}$/.test(urlMainParts.hostname)) {
     result.contractAddress = urlMainParts.hostname;
   } 
   // Hostname is not an ethereum address, try name resolution
   else {
-    if(isSupportedDomainName(urlMainParts.hostname, web3chain)) {
-      // Debugging : Store the chain id of the resolver
+    let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, web3chain);
+    if(domainNameResolver) {
+      // Store infos about the name resolution
+      result.nameResolution.resolver = domainNameResolver;
       result.nameResolution.chainId = web3Client.chain.id;
       result.nameResolution.resolvedName = urlMainParts.hostname
 
@@ -121,9 +137,10 @@ async function parseUrl(url, opts) {
 
 
   // Determining the web3 mode
-  // 2 modes :
+  // 3 modes :
   // - Auto : we parse the path and arguments and send them
   // - Manual : we forward all the path & arguments as calldata
+  // - ResourceRequest : we parse the path and arguments and send them
 
   // Default is auto
   result.mode = "auto"
@@ -154,7 +171,7 @@ async function parseUrl(url, opts) {
     result.mode = 'manual';
   }
   if(resolveModeAsString == "5219") {
-    result.mode = '5219';
+    result.mode = 'resourceRequest';
   }
 
 
@@ -165,18 +182,17 @@ async function parseUrl(url, opts) {
   else if(result.mode == 'auto') {
     await parseAutoUrl(result, urlMainParts.path, web3Client)
   }
-  else if(result.mode == '5219') {
+  else if(result.mode == 'resourceRequest') {
     parse5219Url(result, urlMainParts.path)
   }
 
   return result
 }
 
-
 /**
- * Execute a parsed web3:// URL from parseUrl()
+ * Step 2: Make the call to the main contract.
  */
-async function fetchParsedUrl(parsedUrl, opts) {
+async function fetchContractReturn(parsedUrl, opts) {
   // Option defaults
   opts = opts || {}
   opts = {...{
@@ -197,74 +213,85 @@ async function fetchParsedUrl(parsedUrl, opts) {
     transport: http(),
   });
 
-  let contractReturn = null;
-  // Raw calldata call
-  if(parsedUrl.contractCallMode == 'calldata') {
-    let rawOutput = await web3Client.call({
-      to: parsedUrl.contractAddress,
-      data: parsedUrl.calldata
-    })
-
-    // Looks like this is what happens when calling non-contracts
-    if(rawOutput.data === undefined) {
-      throw new Error("Looks like the address is not a contract.");
-    }
-
-    rawOutput = decodeAbiParameters([
-        { type: 'bytes' },
-      ],
-      rawOutput.data,
-    )
-
-    contractReturn = Buffer.from(rawOutput[0].substr(2), "hex")
-  }
+  // Prepare calldata
+  let calldata = null
   // Method call
-  else if(parsedUrl.contractCallMode == 'method') {
-    // Contract definition
+  if (parsedUrl.contractCallMode == 'method') {
     let abi = [
       {
         inputs: parsedUrl.methodArgs,
         name: parsedUrl.methodName,
-        // Assuming string output
-        outputs: parsedUrl.methodReturn,
         stateMutability: 'view',
         type: 'function',
       },
     ];
-    let contract = {
-      address: parsedUrl.contractAddress,
+    calldata = encodeFUnctionData({
       abi: abi,
-    };
-
-    contractReturn = await web3Client.readContract({
-      ...contract,
-      functionName: parsedUrl.methodName,
       args: parsedUrl.methodArgValues,
+      functionName: parsedUrl.methodName,
     })
   }
+  // Raw calldata call
+  else if(parsedUrl.contractCallMode == 'calldata') {
+    calldata = parsedUrl.calldata
+  }
 
+  // Do the contract call
+  let rawOutput = await web3Client.call({
+    to: parsedUrl.contractAddress,
+    data: parsedUrl.calldata
+  })
+
+  // Looks like this is what happens when calling non-contracts
+  if(rawOutput.data === undefined) {
+    throw new Error("Looks like the address is not a contract.");
+  }
+
+  return rawOutput.data;
+}
+
+/**
+ * Execute a parsed web3:// URL from parseUrl().
+ * Returns a Uint8Array byte buffer.
+ */
+async function processContractReturn(parsedUrl, contractReturn) {
   // Contract return processing
   let output = null
   let httpCode = 200
   let httpHeaders = {}
-  if(parsedUrl.contractReturnProcessing == 'firstValue') {
-    output = contractReturn
+
+  if(parsedUrl.contractReturnProcessing == 'decodeABIEncodedBytes') {
+    // Do the ABI decoding, receive the bytes in hex string format
+    let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn)
+    // Convert it into a Uint8Array byte buffer
+    output = hexToBytes(decodedContractReturn[0])
 
     if(parsedUrl.contractReturnProcessingOptions.mimeType) {
       httpHeaders['Content-Type'] = parsedUrl.contractReturnProcessingOptions.mimeType
     }
-  } 
-  else if(parsedUrl.contractReturnProcessing == 'jsonEncode') {
-    if(parsedUrl.contractCallMode == 'method' && parsedUrl.methodReturn.length > 1) {
-      // 2+ var returned? It's already an array
-      output = contractReturn
+  }
+  else if(parsedUrl.contractReturnProcessing == 'jsonEncodeRawBytes') {
+    // JSON-encode the contract return in hex string format inside an array
+    let jsonData = JSON.stringify([contractReturn])
+    // Convert it into a Uint8Array byte buffer
+    output = stringToBytes(jsonData)
+
+    httpHeaders['Content-Type'] = 'application/json'
+  }
+  else if(parsedUrl.contractReturnProcessing == 'jsonEncodeValues') {
+    // Do the ABI decoding, get the vars
+    let decodedContractReturn = decodeAbiParameters(parsedUrl.methodReturn, contractReturn)
+    // If we have some big ints, convert them into hex string
+    for(let i = 0; i < decodedContractReturn.length; i++) {
+      if(typeof decodedContractReturn[i] === "bigint") {
+        decodedContractReturn[i] = "0x" + decodedContractReturn[i].toString(16)
+      }
     }
-    else {
-      // 1 var returned? The plain value is returned, put it in an array
-      output = [contractReturn]
-    }
-    output = JSONbig.stringify(output)
-    output = Buffer.from(output)
+    // JSON-encode them
+    jsonEncodedValues = JSON.stringify(decodedContractReturn)
+    // Convert it into a Uint8Array byte buffer
+    output = stringToBytes(jsonEncodedValues)
+
     httpHeaders['Content-Type'] = 'application/json'
   }
   else if(parsedUrl.contractReturnProcessing == 'erc5219') {
@@ -284,15 +311,4 @@ async function fetchParsedUrl(parsedUrl, opts) {
   return result;
 }
 
-/**
- * Fetch a web3:// URL
- */
-async function fetchUrl(url, opts) {
-
-  let parsedUrl = await parseUrl(url, opts)
-  let result = await fetchParsedUrl(parsedUrl, opts)
-
-  return result;
-}
-
-module.exports = { parseUrl, fetchParsedUrl, fetchUrl };
+module.exports = { fetchUrl, parseUrl, fetchContractReturn, processContractReturn };

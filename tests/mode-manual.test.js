@@ -8,7 +8,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f",
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'text/html'},
     }
   },
@@ -19,7 +19,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f",
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'text/html'},
     }
   },
@@ -30,7 +30,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f766965772f31",
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'text/html'},
     }
   },
@@ -41,7 +41,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f766965772f312e737667",
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
     }
   },
@@ -52,7 +52,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f766965772f25323031", // /view/%201
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'text/html'},
     }
   },
@@ -63,7 +63,7 @@ const tests = [
       mode: "manual",
       contractCallMode: 'calldata',
       calldata: "0x2f766965772f313f613d312532366225334432", // /view/1?a=1%26b%3D2
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'text/html'},
     }
   },

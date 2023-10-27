@@ -22,7 +22,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}],
       methodArgValues: [1],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -46,7 +46,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}],
       methodArgValues: [1],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -62,7 +62,7 @@ const tests = [
       methodArgs: [{type: 'bytes32'}],
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -86,7 +86,7 @@ const tests = [
       methodArgs: [{type: 'bytes32'}],
       methodArgValues: ["0x59f71cd7bbfece3b03f2545253083c3c4da78a52913390a9c05c13ccc013f481"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -102,7 +102,7 @@ const tests = [
       methodArgs: [{type: 'address'}],
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -116,7 +116,7 @@ const tests = [
       methodArgs: [{type: 'address'}],
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -150,7 +150,7 @@ const tests = [
       methodArgs: [{type: 'address'}],
       methodArgValues: ["0xa958da541819f4058c583fc23f1b8cea8182f85e"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -164,7 +164,7 @@ const tests = [
       methodArgs: [{type: 'address'}],
       methodArgValues: ["0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -180,7 +180,7 @@ const tests = [
       methodArgs: [{type: 'bytes'}],
       methodArgValues: ["0x45784578"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -206,7 +206,7 @@ const tests = [
       methodArgs: [{type: 'string'}],
       methodArgValues: ["1"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -222,7 +222,7 @@ const tests = [
       methodArgs: [{type: 'string'}, {type: 'uint256'}],
       methodArgValues: ["1", 2],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -236,7 +236,7 @@ const tests = [
       methodArgs: [{type: 'string'}, {type: 'uint256'}, {type: 'address'}],
       methodArgValues: ["1a", 2, "0x1a9C8182C09F50C8318d769245beA52c32BE35BC"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -252,7 +252,7 @@ const tests = [
       methodArgs: [{type: 'bytes'}],
       methodArgValues: ["1.svg"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue', 
+      contractReturnProcessing: 'decodeABIEncodedBytes', 
       contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
     }
   },
@@ -266,7 +266,7 @@ const tests = [
       methodArgs: [{type: 'bytes'}],
       methodArgValues: ["1.ploua"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue', 
+      contractReturnProcessing: 'decodeABIEncodedBytes', 
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -280,7 +280,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}, {type: 'string'}],
       methodArgValues: [1, "2.svg"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
     }
   },
@@ -296,7 +296,7 @@ const tests = [
   //     methodArgs: [{type: 'uint256'}],
   //     methodArgValues: [1],
   //     methodReturn: [{type: 'string'}],
-  //     contractReturnProcessing: 'firstValue', 
+  //     contractReturnProcessing: 'decodeABIEncodedBytes', 
   //     contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
   //   }
   // },
@@ -315,7 +315,7 @@ const tests = [
   //     methodArgs: [{type: 'uint256'}],
   //     methodArgValues: [1],
   //     methodReturn: [{type: 'string'}],
-  //     contractReturnProcessing: 'firstValue', 
+  //     contractReturnProcessing: 'decodeABIEncodedBytes', 
   //     contractReturnProcessingOptions: {mimeType: 'image/svg+xml'},
   //   }
   // },
@@ -342,7 +342,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}],
       methodArgValues: [1],
       methodReturn: [{type: 'bytes'}],
-      contractReturnProcessing: 'jsonEncode',
+      contractReturnProcessing: 'jsonEncodeValues',
       contractReturnProcessingOptions: {},
     }
   },
@@ -356,7 +356,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}, {type: 'uint256'}],
       methodArgValues: [2, 50],
       methodReturn: [{type: 'uint256'}, {type: 'uint256'}],
-      contractReturnProcessing: 'jsonEncode',
+      contractReturnProcessing: 'jsonEncodeValues',
       contractReturnProcessingOptions: {},
     }
   },
@@ -376,7 +376,7 @@ const tests = [
       methodArgs: [{type: 'uint256'}, {type: 'string'}],
       methodArgValues: [2, "50.svg"],
       methodReturn: [{type: 'uint256'}, {type: 'uint256'}],
-      contractReturnProcessing: 'jsonEncode',
+      contractReturnProcessing: 'jsonEncodeValues',
       contractReturnProcessingOptions: {},
     }
   },
@@ -392,7 +392,7 @@ const tests = [
       methodArgs: [{type: 'string'}],
       methodArgValues: [" 1?"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },
@@ -406,7 +406,7 @@ const tests = [
       methodArgs: [{type: 'string'}],
       methodArgValues: ["→"],
       methodReturn: [{type: 'string'}],
-      contractReturnProcessing: 'firstValue',
+      contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {mimeType: null},
     }
   },

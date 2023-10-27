@@ -2,13 +2,20 @@ const { normalize: ensNormalize } = require('viem/ens')
 const { linagee } = require('./linagee.js')
 const { getChainByShortName } = require('../chains/index.js')
 
-// Is it a supported domain name? (ENS, ...)
-const isSupportedDomainName = (domainName, web3chain) => {
-  return typeof domainName == 'string' && 
-    // ENS is supported on mainnet, goerli and sepolia
-    ((domainName.endsWith('.eth') && [1, 5, 11155111].includes(web3chain.id)) || 
-    //Linagee is supported on mainnet
-     (domainName.endsWith('.og') && [1].includes(web3chain.id)) );
+// For a given domain and chain, return a eligible resolver (ens, ...)
+const getEligibleDomainNameResolver = (domainName, web3chain) => {
+  let result = null;
+
+  if(typeof domainName == 'string' && 
+    domainName.endsWith('.eth') && [1, 5, 11155111].includes(web3chain.id)) {
+    result = "ens";
+  }
+  else if(typeof domainName == 'string' && 
+    domainName.endsWith('.og') && [1].includes(web3chain.id)) {
+    result = "linagee";
+  }
+
+  return result;
 }
 
 // Attempt resolution of the domain name
@@ -107,4 +114,4 @@ const resolveDomainNameForEIP4804 = async (domainName, web3Client) => {
 }
 
 
-module.exports = { isSupportedDomainName, resolveDomainName, resolveDomainNameForEIP4804 };
+module.exports = { getEligibleDomainNameResolver, resolveDomainName, resolveDomainNameForEIP4804 };

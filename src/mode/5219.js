@@ -14,21 +14,21 @@ function parse5219Url(result, path) {
   result.contractReturnProcessingOptions = {}
 
   if(path === undefined || path == "") {
-    path == "/";
+    path = "/";
   }
 
   // Separate path from search params
-  let matchResult = path.match(/^(?<pathname>[^?]*)([?](?<searchParams>.*))?$/)
+  let matchResult = path.match(/^(?<pathname>[^?]*)?([?](?<searchParams>.*))?$/)
   if(matchResult == null) {
     throw new Error("Failed basic parsing of the path");
   }
-  let pathname = matchResult.groups.pathname
+  let pathname = matchResult.groups.pathname !== undefined ? matchResult.groups.pathname : ""
   let pathnameParts = pathname.split('/')  
   let searchParams = new URLSearchParams(matchResult.groups.searchParams);
 
 
   // Determine args
-  pathnameParts = pathnameParts.slice(1).filter(x => x != '')
+  pathnameParts = pathnameParts.slice(1).filter(x => x != '').map(x => decodeURIComponent(x))
   result.methodArgValues.push(pathnameParts)
 
   // Determine params

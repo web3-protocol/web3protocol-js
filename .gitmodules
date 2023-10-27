@@ -1,0 +1,3 @@
+[submodule "tests/tests"]
+	path = tests/tests
+	url = git@github.com:web3-protocol/web3protocol-tests.git
