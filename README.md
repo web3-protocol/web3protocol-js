@@ -4,35 +4,46 @@
 
 Parse and execute [ERC-6860](https://eips.ethereum.org/EIPS/eip-6860) ``web3://`` URLs. Used by [EVM Browser](https://github.com/nand2/evm-browser) to browse ``web3://`` on-chain websites.
 
-RPCs used to make the calls are provided by [Viem.sh](https://viem.sh/) and [chainid.network](https://chainid.network/chains.json).
+## Usage
 
-### fetchUrl(url, opts)
+```js
+const { Client } = require('web3protocol');
+const { getDefaultChainList } = require('web3protocol/chains');
 
-Fetch a web3:// URL, such as 
+// Get a prepared chain list that you can optionally alter, or provide your own
+let chainList = getDefaultChainList()
 
-```web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName```
+// Configure a client with these chains definitions
+web3Client = new Client(chainList)
 
-``opts`` is an object of options. 2 options : 
-
-- useEmbeddedChainRPCs : A boolean indicating whether to use RPC URLs provided in this package. By setting it to false, nothing will work unless you specify chains RPCs with the ``chains`` option.
-- chains: Contains an array of chain objects (``id``, ``rpcUrls`` members), which override existing chains, or add non-existing chains. Example:
+fetchedWeb3Url = await web3Client.fetchUrl("web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName")
+// fetchedWeb3Url.httpCode = 200
+// fetchedWeb3Url.httpHeaders = {}
+// fetchedWeb3Url.output = Uint8Array(3) [ 63, 63, 63 ]
 
 ```
-{
-  chains: [{
-    id: 1,
-    rpcUrls: ['https://cloudflare-eth.com']
-  }]
-}
-```
 
-## Implemented features
+Fetch a ``web3://`` URL, get an HTTP status code, HTTP response headers and a bytes array (represented as an array of uint8).
+
+``getDefaultChainList()`` is provided as a quick way to launch (mix of RPC URLs provided by the [Viem.sh](https://viem.sh/) library and the [chainid.network](https://chainid.network/chains.json) website), but be aware this could sometimes get out of date.
+
+
+## Supported standards
+
+### Implemented features
 
 - [ERC-6860](https://eips.ethereum.org/EIPS/eip-6860) : the base web3:// protocol with auto and manual mode, basic ENS support. This updates [ERC-4804](https://eips.ethereum.org/EIPS/eip-4804) with clarifications, small fixes and changes.
 - [ERC-6821](https://eips.ethereum.org/EIPS/eip-6821) (draft) : ENS resolution : support for the ``contentcontract`` TXT field to point to a contract in another chain
 - [ERC-6944](https://eips.ethereum.org/EIPS/eip-6944) (draft) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
 - Not standard : Linagee .og domain names
 
-## Upcoming features
+### Upcoming features
 
 - [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) (pending) : Auto mode : Add more flexibility to specify the MIME type.
+
+
+## Testing
+
+Web3:// test files are located in [their own git repository](https://github.com/web3-protocol/web3protocol-tests) and are imported as a git submodule. After cloning, please run ``git submodule init`` and then ``git submodule update``.
+
+Testing is then launched with ``yarn test``

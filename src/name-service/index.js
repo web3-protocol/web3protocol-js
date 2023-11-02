@@ -1,6 +1,5 @@
 const { normalize: ensNormalize } = require('viem/ens')
 const { linagee } = require('./linagee.js')
-const { getChainByShortName } = require('../chains/index.js')
 
 // For a given domain and chain, return a eligible resolver (ens, ...)
 const getEligibleDomainNameResolver = (domainName, web3chain) => {
@@ -47,7 +46,7 @@ const resolveDomainName = async (domainName, web3Client) => {
 
 // Follow eip-6821 standard : if there is a contentcontract TXT record 
 // with a common or EIP-3770 address, then go there. Otherwise, go to the resolved address.
-const resolveDomainNameForEIP4804 = async (domainName, web3Client) => {
+const resolveDomainNameForEIP4804 = async (domainName, web3Client, chainList) => {
   let result = {
     address: null,
     chainId: null,
@@ -85,14 +84,14 @@ const resolveDomainNameForEIP4804 = async (domainName, web3Client) => {
       // EIP-3770 address
       else if(contentContractTxtParts.length == 2) {
         // Search the chain by its chain short name
-        let chainByShortName = getChainByShortName(contentContractTxtParts[0])
+        let chainByShortName = Object.values(chainList).find(chain => chain.shortName == contentContractTxtParts[0])
         if(chainByShortName == null) {
           throw new Error("The chain short name of the contentcontract TXT record was not found")
         }
         if(/^0x[0-9a-fA-F]{40}/.test(contentContractTxtParts[1]) == false) {
           throw new Error("Invalid address in contentcontract TXT record")
         }
-        result.chainId = chainByShortName.chainId
+        result.chainId = chainByShortName.id
         result.address = contentContractTxtParts[1]
       }
       // Mistake

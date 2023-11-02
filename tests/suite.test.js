@@ -2,7 +2,8 @@ const toml = require('toml');
 const fs = require("fs");
 const { hexToBytes, bytesToString } = require('viem');
 
-const { fetchUrl, parseUrl, processContractReturn } = require('../src/index');
+const { Client } = require('../src');
+const { getDefaultChainList } = require('../src/chains')
 
 const testSuiteFiles = [
   "tests/tests/parsing-base.toml",
@@ -44,7 +45,15 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
     describe(testSuite.name + ": " + testGroup.name, () => {
       testGroup.tests.forEach(tst => {
-        test(tst.name + ": " + tst.url, async () => {
+        test(tst.name + (tst.url ? ": " + tst.url : ""), async () => {
+
+          // Prepare a chain list
+          let chainList = getDefaultChainList()
+          // Change the primary RPC of mainnet, current one (cloudflare) is flaky
+          chainList[0].rpcUrls = ["https://ethereum.publicnode.com"]
+
+          // Create a new web3:// client
+          web3Client = new Client(chainList)
 
           // Several types of tests
           // Test type: Parsing URL
@@ -52,12 +61,12 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
             // Expected failure
             if(tst.error) {
-              await expect(async () => {await parseUrl(tst.url)}).rejects.toThrowError()
+              await expect(async () => {await web3Client.parseUrl(tst.url)}).rejects.toThrowError()
               return
             }
 
             // Expected success
-            let parsedUrl = await parseUrl(tst.url)
+            let parsedUrl = await web3Client.parseUrl(tst.url)
 
             if(tst.contractAddress) {
               expect(parsedUrl.contractAddress).toEqual(tst.contractAddress)
@@ -131,12 +140,12 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
             // Expected failure
             if(tst.error) {
-              await expect(async () => {await processContractReturn(parsedUrl, tst.contractReturn)}).rejects.toThrowError()
+              await expect(async () => {await web3Client.processContractReturn(parsedUrl, tst.contractReturn)}).rejects.toThrowError()
               return
             }
 
             // Execute the processing
-            fetchedWeb3Url = await processContractReturn(parsedUrl, tst.contractReturn)
+            fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, tst.contractReturn)
 
             if(tst.output) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
@@ -158,16 +167,17 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
           else if(testSuite.type == "fetch") {
             // Expected failure
             if(tst.error) {
-              await expect(async () => {await fetchUrl(tst.url)}).rejects.toThrowError()
+              await expect(async () => {await web3Client.fetchUrl(tst.url)}).rejects.toThrowError()
               return
             }
 
-            fetchedWeb3Url = await fetchUrl(tst.url)
+            fetchedWeb3Url = await web3Client.fetchUrl(tst.url)
 
             if(tst.output) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
             }
             if(tst.outputAsString) {
+              console.log(fetchedWeb3Url.output)
               expect(bytesToString(fetchedWeb3Url.output)).toEqual(tst.outputAsString)
             }
             if(tst.httpCode) {
