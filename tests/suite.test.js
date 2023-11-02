@@ -49,9 +49,6 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
           // Prepare a chain list
           let chainList = getDefaultChainList()
-          // Change the primary RPC of mainnet, current one (cloudflare) is flaky
-          chainList[0].rpcUrls = ["https://ethereum.publicnode.com"]
-
           // Create a new web3:// client
           web3Client = new Client(chainList)
 
@@ -177,7 +174,6 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
             }
             if(tst.outputAsString) {
-              console.log(fetchedWeb3Url.output)
               expect(bytesToString(fetchedWeb3Url.output)).toEqual(tst.outputAsString)
             }
             if(tst.httpCode) {

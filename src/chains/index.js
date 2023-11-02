@@ -45,6 +45,12 @@ function getDefaultChainList() {
       }
     }
 
+    // Final manual overrides :
+    // Ethereum: Cloudflare seems to be flaky lately, use publicnode.com
+    if(originalChain.chainId == 1) {
+      defaultRpcs = ["https://ethereum.publicnode.com"]
+    }
+
     let newChain = {
       id: originalChain.chainId,
       name: originalChain.name,
