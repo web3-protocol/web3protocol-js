@@ -5,10 +5,10 @@ const { hexToBytes, bytesToString } = require('viem');
 const { fetchUrl, parseUrl, processContractReturn } = require('../src/index');
 
 const testSuiteFiles = [
-  // "tests/tests/parsing-base.toml",
-  // "tests/tests/parsing-mode-manual.toml",
-  // "tests/tests/parsing-mode-auto.toml",
-  // "tests/tests/parsing-mode-resource-request.toml",
+  "tests/tests/parsing-base.toml",
+  "tests/tests/parsing-mode-manual.toml",
+  "tests/tests/parsing-mode-auto.toml",
+  "tests/tests/parsing-mode-resource-request.toml",
   "tests/tests/contract-return-processing.toml",
   // "tests/tests/fetch.toml",
 ];
@@ -112,9 +112,9 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               expect(parsedUrl.contractReturnProcessingOptions.mimeType).toEqual(tst.decodedABIEncodedBytesMimeType)
             }
             if(tst.jsonEncodedValueTypes && tst.jsonEncodedValueTypes.length > 0) {
-              expect(parsedUrl.methodReturn.length).toEqual(tst.jsonEncodedValueTypes.length)
+              expect(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes.length).toEqual(tst.jsonEncodedValueTypes.length)
               for(let i = 0; i < tst.jsonEncodedValueTypes.length; i++) {
-                expect(parsedUrl.methodReturn[i].type).toEqual(tst.jsonEncodedValueTypes[i].type)
+                expect(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes[i].type).toEqual(tst.jsonEncodedValueTypes[i].type)
               }
             }
           }
@@ -125,8 +125,8 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               contractReturnProcessing: tst.contractReturnProcessing,
               contractReturnProcessingOptions: {
                 mimeType: tst.decodedABIEncodedBytesMimeType,
+                jsonEncodedValueTypes: tst.jsonEncodedValueTypes,
               },
-              methodReturn: tst.jsonEncodedValueTypes
             }
 
             // Expected failure

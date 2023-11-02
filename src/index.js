@@ -2,7 +2,7 @@ const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes
 
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
-const { parse5219Url } = require('./mode/5219');
+const { parseResourceRequestUrl, processResourceRequestContractReturn } = require('./mode/5219');
 const { getEligibleDomainNameResolver, resolveDomainNameForEIP4804 } = require('./name-service/index')
 const { createChainForViem } = require('./chains/index.js')
 
@@ -51,7 +51,6 @@ async function parseUrl(url, opts) {
     methodName: null,
     methodArgs: [],
     methodArgValues: [],
-    methodReturn: [{type: 'string'}],
     // Enum, possibilities are:
     // - decodeABIEncodedBytes: Will return the first value of the result
     // - jsonEncodeRawBytes: Will JSON-encode the raw bytes of the returned data
@@ -62,7 +61,10 @@ async function parseUrl(url, opts) {
     contractReturnProcessingOptions: {
       // If contractReturnProcessing == 'decodeABIEncodedBytes', specify the mime type to use on the 
       // Content-Type HTTP header
-      mimeType: null
+      mimeType: null,
+      // If contractReturnProcessing == 'jsonEncodeValues', specify the ABI definition to use to decode
+      // the returned data
+      jsonEncodedValueTypes: [],
     },
   }
 
@@ -183,7 +185,7 @@ async function parseUrl(url, opts) {
     await parseAutoUrl(result, urlMainParts.path, web3Client)
   }
   else if(result.mode == 'resourceRequest') {
-    parse5219Url(result, urlMainParts.path)
+    parseResourceRequestUrl(result, urlMainParts.path)
   }
 
   return result
@@ -252,35 +254,38 @@ async function fetchContractReturn(parsedUrl, opts) {
 
 /**
  * Execute a parsed web3:// URL from parseUrl().
- * Returns a Uint8Array byte buffer.
+ * Returns an http code, http headers, and a Uint8Array body.
  */
 async function processContractReturn(parsedUrl, contractReturn) {
   // Contract return processing
-  let output = null
-  let httpCode = 200
-  let httpHeaders = {}
+  let fetchedUrl = {
+    httpCode: 200,
+    httpHeaders: {},
+    output: [], // Array of uint8 (bytes array)
+    parsedUrl: parsedUrl,
+  }
 
   if(parsedUrl.contractReturnProcessing == 'decodeABIEncodedBytes') {
     // Do the ABI decoding, receive the bytes in hex string format
     let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn)
     // Convert it into a Uint8Array byte buffer
-    output = hexToBytes(decodedContractReturn[0])
+    fetchedUrl.output = hexToBytes(decodedContractReturn[0])
 
     if(parsedUrl.contractReturnProcessingOptions.mimeType) {
-      httpHeaders['Content-Type'] = parsedUrl.contractReturnProcessingOptions.mimeType
+      fetchedUrl.httpHeaders['Content-Type'] = parsedUrl.contractReturnProcessingOptions.mimeType
     }
   }
   else if(parsedUrl.contractReturnProcessing == 'jsonEncodeRawBytes') {
     // JSON-encode the contract return in hex string format inside an array
     let jsonData = JSON.stringify([contractReturn])
     // Convert it into a Uint8Array byte buffer
-    output = stringToBytes(jsonData)
+    fetchedUrl.output = stringToBytes(jsonData)
 
-    httpHeaders['Content-Type'] = 'application/json'
+    fetchedUrl.httpHeaders['Content-Type'] = 'application/json'
   }
   else if(parsedUrl.contractReturnProcessing == 'jsonEncodeValues') {
     // Do the ABI decoding, get the vars
-    let decodedContractReturn = decodeAbiParameters(parsedUrl.methodReturn, contractReturn)
+    let decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn)
     // If we have some big ints, convert them into hex string
     for(let i = 0; i < decodedContractReturn.length; i++) {
       if(typeof decodedContractReturn[i] === "bigint") {
@@ -290,25 +295,15 @@ async function processContractReturn(parsedUrl, contractReturn) {
     // JSON-encode them
     jsonEncodedValues = JSON.stringify(decodedContractReturn)
     // Convert it into a Uint8Array byte buffer
-    output = stringToBytes(jsonEncodedValues)
+    fetchedUrl.output = stringToBytes(jsonEncodedValues)
 
-    httpHeaders['Content-Type'] = 'application/json'
+    fetchedUrl.httpHeaders['Content-Type'] = 'application/json'
   }
-  else if(parsedUrl.contractReturnProcessing == 'erc5219') {
-    httpCode = contractReturn[0]
-    output = contractReturn[1]
-    for(let i = 0; i < contractReturn[2].length; i++) {
-      httpHeaders[contractReturn[2][i][0]] = contractReturn[2][i][1];
-    }
+  else if(parsedUrl.contractReturnProcessing == 'decodeErc5219Request') {
+    processResourceRequestContractReturn(fetchedUrl, contractReturn)
   } 
 
-  let result = {
-    parsedUrl: parsedUrl,
-    output: output,
-    httpCode: httpCode,
-    httpHeaders: httpHeaders,
-  }
-  return result;
+  return fetchedUrl;
 }
 
 module.exports = { fetchUrl, parseUrl, fetchContractReturn, processContractReturn };

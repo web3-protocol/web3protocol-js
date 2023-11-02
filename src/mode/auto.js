@@ -1,4 +1,6 @@
 const mime = require('mime-types')
+const { parseAbiParameter } = require('viem');
+
 const { getEligibleDomainNameResolver, resolveDomainName } = require('../name-service/index')
 
 
@@ -11,8 +13,6 @@ async function parseAutoUrl(result, path, web3Client) {
   }
 
   result.contractCallMode = 'method';
-  // Default return type
-  result.methodReturn = [{type: 'string'}]
 
   // Separate path from search params
   let matchResult = path.match(/^(?<pathname>[^?]*)([?](?<searchParams>.*))?$/)
@@ -48,11 +48,15 @@ async function parseAutoUrl(result, path, web3Client) {
   }
 
   // Handle the return definition
-  let returnsParam = searchParams.get('returns')
+  // We take the last of "returns" or "returnTypes"
+  let returnsParam = ""
+  for (const [key, value] of searchParams.entries()) {
+    if(key == "returns" || key == "returnTypes") {
+      returnsParam = value
+    }
+  }
   if(returnsParam && returnsParam.length >= 2) {
     // When we have a return definition, we returns everything as JSON
-    // Erase potential previous mime type override
-    result.contractReturnProcessingOptions = {}
 
     returnsParamParts = returnsParam.substr(1, returnsParam.length - 2).split(',').map(returnType => returnType.trim()).filter(x => x != '')
 
@@ -63,9 +67,11 @@ async function parseAutoUrl(result, path, web3Client) {
     else {
       // ?returns=(aa,bb) => We json-encode the abi-decoded values
       result.contractReturnProcessing = 'jsonEncodeValues';
-      result.methodReturn = []
+      result.contractReturnProcessingOptions.jsonEncodedValueTypes = []
       for(let i = 0; i < returnsParamParts.length; i++) {
-        result.methodReturn.push({type: returnsParamParts[i]})
+        // Check if type is valid. Will throw an error is type is invalid.
+        parseAbiParameter(returnsParamParts[i] + " xx")
+        result.contractReturnProcessingOptions.jsonEncodedValueTypes.push({type: returnsParamParts[i]})
       }
     }
   }

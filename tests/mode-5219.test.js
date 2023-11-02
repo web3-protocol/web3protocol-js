@@ -11,7 +11,7 @@ const tests = [
       methodArgs: [{type: 'string[]'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
       methodArgValues: [[], []],
       methodReturn: [{type: 'uint16'}, {type: 'string'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
-      contractReturnProcessing: 'erc5219',
+      contractReturnProcessing: 'decodeErc5219Request',
       contractReturnProcessingOptions: {},
     }
   },
@@ -25,7 +25,7 @@ const tests = [
       methodArgs: [{type: 'string[]'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
       methodArgValues: [["view", "1234"], []],
       methodReturn: [{type: 'uint16'}, {type: 'string'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
-      contractReturnProcessing: 'erc5219',
+      contractReturnProcessing: 'decodeErc5219Request',
       contractReturnProcessingOptions: {},
     }
   },
@@ -39,7 +39,7 @@ const tests = [
       methodArgs: [{type: 'string[]'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
       methodArgValues: [["view", "1234"], [["aa", "bb"]]],
       methodReturn: [{type: 'uint16'}, {type: 'string'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}],
-      contractReturnProcessing: 'erc5219',
+      contractReturnProcessing: 'decodeErc5219Request',
       contractReturnProcessingOptions: {},
     }
   },
