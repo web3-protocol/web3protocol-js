@@ -1,4 +1,4 @@
-const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes } = require('viem');
+const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } = require('viem');
 
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
@@ -227,7 +227,7 @@ async function fetchContractReturn(parsedUrl, opts) {
         type: 'function',
       },
     ];
-    calldata = encodeFUnctionData({
+    calldata = encodeFunctionData({
       abi: abi,
       args: parsedUrl.methodArgValues,
       functionName: parsedUrl.methodName,
@@ -241,7 +241,7 @@ async function fetchContractReturn(parsedUrl, opts) {
   // Do the contract call
   let rawOutput = await web3Client.call({
     to: parsedUrl.contractAddress,
-    data: parsedUrl.calldata
+    data: calldata
   })
 
   // Looks like this is what happens when calling non-contracts
@@ -286,14 +286,10 @@ async function processContractReturn(parsedUrl, contractReturn) {
   else if(parsedUrl.contractReturnProcessing == 'jsonEncodeValues') {
     // Do the ABI decoding, get the vars
     let decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn)
-    // If we have some big ints, convert them into hex string
-    for(let i = 0; i < decodedContractReturn.length; i++) {
-      if(typeof decodedContractReturn[i] === "bigint") {
-        decodedContractReturn[i] = "0x" + decodedContractReturn[i].toString(16)
-      }
-    }
     // JSON-encode them
-    jsonEncodedValues = JSON.stringify(decodedContractReturn)
+    // (If we have some bigInts, convert them into hex string)
+    jsonEncodedValues = JSON.stringify(decodedContractReturn, 
+      (key, value) => typeof value === "bigint" ? "0x" + value.toString(16) : value)
     // Convert it into a Uint8Array byte buffer
     fetchedUrl.output = stringToBytes(jsonEncodedValues)
 

@@ -10,7 +10,7 @@ const testSuiteFiles = [
   "tests/tests/parsing-mode-auto.toml",
   "tests/tests/parsing-mode-resource-request.toml",
   "tests/tests/contract-return-processing.toml",
-  // "tests/tests/fetch.toml",
+  "tests/tests/fetch.toml",
 ];
 
 for(let k = 0; k < testSuiteFiles.length; k++) {
@@ -118,7 +118,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               }
             }
           }
-          // Test type: Parsing URL
+          // Test type: Contract return processing
           else if(testSuite.type == 'contractReturnProcessing') {
             // Create and populate a parsedUrl
             parsedUrl = {
@@ -154,6 +154,31 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
 
           }
+          // Test type: Execution of the whole process
+          else if(testSuite.type == "fetch") {
+            // Expected failure
+            if(tst.error) {
+              await expect(async () => {await fetchUrl(tst.url)}).rejects.toThrowError()
+              return
+            }
+
+            fetchedWeb3Url = await fetchUrl(tst.url)
+
+            if(tst.output) {
+              expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
+            }
+            if(tst.outputAsString) {
+              expect(bytesToString(fetchedWeb3Url.output)).toEqual(tst.outputAsString)
+            }
+            if(tst.httpCode) {
+              expect(fetchedWeb3Url.httpCode).toEqual(tst.httpCode)
+            }
+            expect(fetchedWeb3Url.httpHeaders.length).toEqual(tst.httpHeaders.length)
+            Object.keys(tst.httpHeaders).forEach(headerName => {
+              expect(fetchedWeb3Url.httpHeaders[headerName]).toEqual(tst.httpHeaders[headerName])
+            })
+          }
+
         }, 15000 /* ms of timeout */)
       })
     })
