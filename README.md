@@ -7,16 +7,16 @@ Parse and execute [ERC-6860](https://eips.ethereum.org/EIPS/eip-6860) ``web3://`
 ## Usage
 
 ```js
-const { Client } = require('web3protocol');
-const { getDefaultChainList } = require('web3protocol/chains');
+import { Client } from 'web3protocol';
+import { getDefaultChainList } from 'web3protocol/src/chains/index.js';
 
 // Get a prepared chain list that you can optionally alter, or provide your own
 let chainList = getDefaultChainList()
 
 // Configure a client with these chains definitions
-web3Client = new Client(chainList)
+let web3Client = new Client(chainList)
 
-fetchedWeb3Url = await web3Client.fetchUrl("web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName")
+let fetchedWeb3Url = await web3Client.fetchUrl("web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName")
 // fetchedWeb3Url.httpCode = 200
 // fetchedWeb3Url.httpHeaders = {}
 // fetchedWeb3Url.output = Uint8Array(3) [ 63, 63, 63 ]
