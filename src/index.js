@@ -30,8 +30,10 @@ class Client {
    */
   async parseUrl(url) {
     let result = {
-      contractAddress: null,
       nameResolution: {
+        // Enum, possibilities are
+        // - ens
+        // - linagee (for .og domains)
         resolver: null,
         resolverAddress: null,
         resolverChainId: null,
@@ -45,9 +47,17 @@ class Client {
         // If resolutionType is erc6821, contains the content of the TXT record
         erc6821ContentContractTxt: null,
       },
+
+      contractAddress: null,
       chainId: null,
-      // Web3 mode: 'auto', 'manual' or 'resourceRequest'
+      
+      // Web3 resolve mode: 'auto', 'manual' or 'resourceRequest'
       mode: null,
+      // The calldata sent to the contract to determine the resolve mode
+      modeDeterminationCalldata: null,
+      // The data returned by the contract to determine the resolve mode
+      modeDeterminationReturn: null,
+      
       // How do we call the smartcontract
       // 'calldata' : We send the specified calldata
       // 'method': We use the specified method parameters
@@ -58,6 +68,7 @@ class Client {
       methodArgValues: [],
       // For contractCallMode: calldata, or method (derived)
       calldata: null,
+      
       // Enum, possibilities are:
       // - decodeABIEncodedBytes: Will return the first value of the result
       // - jsonEncodeRawBytes: Will JSON-encode the raw bytes of the returned data
@@ -152,25 +163,34 @@ class Client {
     // Default is auto
     result.mode = "auto"
 
-    // Detect if the contract is manual mode : resolveMode must returns "manual"
-    let resolveMode = '';
+    // Detect if the contract is another mode
+    let resolveModeAbi = [{
+      inputs: [],
+      name: 'resolveMode',
+      outputs: [{type: 'bytes32'}],
+      stateMutability: 'view',
+      type: 'function',
+    }];
+    result.modeDeterminationCalldata = encodeFunctionData({
+      abi: resolveModeAbi,
+      functionName: 'resolveMode',
+      args: [],
+    })
     try {
-      resolveMode = await web3Client.readContract({
-        address: result.contractAddress,
-        abi: [{
-          inputs: [],
-          name: 'resolveMode',
-          outputs: [{type: 'bytes32'}],
-          stateMutability: 'view',
-          type: 'function',
-        }],
-        functionName: 'resolveMode',
-        args: [],
+      let rawOutput = await web3Client.call({
+        to: result.contractAddress,
+        data: result.modeDeterminationCalldata,
       })
+      if(rawOutput.data !== undefined) {
+        result.modeDeterminationReturn = rawOutput.data;
+      }
     }
     catch(err) {/** If call to resolveMode fails, we default to auto */}
 
-    let resolveModeAsString = Buffer.from(resolveMode.substr(2), "hex").toString().replace(/\0/g, '');
+    let resolveModeAsString = ''
+    if(result.modeDeterminationReturn) {
+      resolveModeAsString = Buffer.from(result.modeDeterminationReturn.substr(2), "hex").toString().replace(/\0/g, '');
+    }
     if(['', 'auto', 'manual', '5219'].indexOf(resolveModeAsString) === -1) {
       throw new Error("web3 resolveMode '" + resolveModeAsString + "' is not supported")
     }
