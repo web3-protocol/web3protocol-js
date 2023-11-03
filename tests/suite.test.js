@@ -76,7 +76,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               expect(parsedUrl.nameResolution.resolver).toEqual(tst.hostDomainNameResolver)
             }
             if(tst.hostDomainNameResolverChainId) {
-              expect(parsedUrl.nameResolution.chainId).toEqual(tst.hostDomainNameResolverChainId)
+              expect(parsedUrl.nameResolution.resolverChainId).toEqual(tst.hostDomainNameResolverChainId)
             }
 
             if(tst.resolveMode) {

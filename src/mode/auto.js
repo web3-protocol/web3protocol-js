@@ -191,9 +191,11 @@ async function parseAutoUrlArgument(argument, web3Client) {
       }
       // Domain name
       else {
-        if(getEligibleDomainNameResolver(argValueStr, web3Client.chain)) {
+        let domainNameResolver = getEligibleDomainNameResolver(argValueStr, web3Client.chain)
+        if(domainNameResolver) {
           // Will throw an error if failure
-          result.value = await resolveDomainName(argValueStr, web3Client);
+          let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, web3Client);
+          result.value = nameResolution.resultAddress
         }
         else {
           throw new Error("Unrecognized domain name")
@@ -238,10 +240,12 @@ async function parseAutoUrlArgument(argument, web3Client) {
     }
     // Fallback autodetection: It must be a domain name
     else {
-      if(getEligibleDomainNameResolver(argValueStr, web3Client.chain)) {
+      let domainNameResolver = getEligibleDomainNameResolver(argValueStr, web3Client.chain)
+      if(domainNameResolver) {
         result.type = "address"
         // Will throw an error if failure
-        result.value = await resolveDomainName(argValueStr, web3Client);
+        let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, web3Client);
+        result.value = nameResolution.resultAddress
       }
       else {
         throw new Error("Unrecognized domain name")

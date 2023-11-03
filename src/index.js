@@ -3,7 +3,7 @@ const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes
 const { parseManualUrl } = require('./mode/manual');
 const { parseAutoUrl } = require('./mode/auto');
 const { parseResourceRequestUrl, processResourceRequestContractReturn } = require('./mode/5219');
-const { getEligibleDomainNameResolver, resolveDomainNameForEIP4804 } = require('./name-service/index')
+const { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } = require('./name-service/index')
 
 
 class Client {
@@ -33,8 +33,17 @@ class Client {
       contractAddress: null,
       nameResolution: {
         resolver: null,
-        chainId: null,
+        resolverAddress: null,
+        resolverChainId: null,
         resolvedName: null,
+        resultAddress: null,
+        resultChainId: null,
+        // Enum, possibilities are
+        // - direct: Direct domain name to address translation
+        // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
+        resolutionType: 'direct',
+        // If resolutionType is erc6821, contains the content of the TXT record
+        erc6821ContentContractTxt: null,
       },
       chainId: null,
       // Web3 mode: 'auto', 'manual' or 'resourceRequest'
@@ -43,18 +52,18 @@ class Client {
       // 'calldata' : We send the specified calldata
       // 'method': We use the specified method parameters
       contractCallMode: null,
-      // For contractCallMode: calldata
-      calldata: null,
       // For contractCallMode: method
       methodName: null,
       methodArgs: [],
       methodArgValues: [],
+      // For contractCallMode: calldata, or method (derived)
+      calldata: null,
       // Enum, possibilities are:
       // - decodeABIEncodedBytes: Will return the first value of the result
       // - jsonEncodeRawBytes: Will JSON-encode the raw bytes of the returned data
       // - jsonEncodeValues: Will JSON-encode the entries of the result, and return it as a single string
+      // - decodeErc5219Request: Will parse the result following the ERC-5219 spec
       // - dataUrl: Will parse the result as a data URL
-      // - erc5219: Will parse the result following the ERC-5219 spec
       contractReturnProcessing: 'decodeABIEncodedBytes',
       contractReturnProcessingOptions: {
         // If contractReturnProcessing == 'decodeABIEncodedBytes', specify the mime type to use on the 
@@ -102,26 +111,25 @@ class Client {
     else {
       let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, web3chain);
       if(domainNameResolver) {
-        // Store infos about the name resolution
-        result.nameResolution.resolver = domainNameResolver;
-        result.nameResolution.chainId = web3Client.chain.id;
-        result.nameResolution.resolvedName = urlMainParts.hostname
-
+        // Do the name resolution
         let resolutionInfos = null
         try {
-          resolutionInfos = await resolveDomainNameForEIP4804(urlMainParts.hostname, web3Client, this.#chainList)
+          resolutionInfos = await resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, web3Client, this.#chainList)
         }
         catch(err) {
           throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
         }
 
-        // Set contractAddress address
-        result.contractAddress = resolutionInfos.address
-        // We got an address on another chain? Update the chainId and the web3Client
-        if(resolutionInfos.chainId) {
-          result.chainId = resolutionInfos.chainId
+        // Store infos about the name resolution
+        result.nameResolution = {...result.nameResolution, ...resolutionInfos}
 
-          web3chain = this.#createChainForViem(resolutionInfos.chainId)
+        // Set contractAddress address
+        result.contractAddress = resolutionInfos.resultAddress
+        // We got an address on another chain? Update the chainId and the web3Client
+        if(resolutionInfos.resultChainId) {
+          result.chainId = resolutionInfos.resultChainId
+
+          web3chain = this.#createChainForViem(resolutionInfos.resultChainId)
           web3Client = createPublicClient({
             chain: web3chain,
             transport: http(),
@@ -205,9 +213,7 @@ class Client {
       transport: http(),
     });
 
-    // Prepare calldata
-    let calldata = null
-    // Method call
+    // Method call: Compute calldata
     if (parsedUrl.contractCallMode == 'method') {
       let abi = [
         {
@@ -217,21 +223,17 @@ class Client {
           type: 'function',
         },
       ];
-      calldata = encodeFunctionData({
+      parsedUrl.calldata = encodeFunctionData({
         abi: abi,
         args: parsedUrl.methodArgValues,
         functionName: parsedUrl.methodName,
       })
     }
-    // Raw calldata call
-    else if(parsedUrl.contractCallMode == 'calldata') {
-      calldata = parsedUrl.calldata
-    }
 
     // Do the contract call
     let rawOutput = await web3Client.call({
       to: parsedUrl.contractAddress,
-      data: calldata
+      data: parsedUrl.calldata
     })
 
     // Looks like this is what happens when calling non-contracts
