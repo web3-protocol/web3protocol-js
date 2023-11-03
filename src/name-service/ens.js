@@ -6,6 +6,7 @@ const ensResolveDomainName = async (domainName, web3Client) => {
     resolver: 'ens',
     resolverAddress: null,
     resolverChainId: null,
+    resolverChainRpc: null,
     resolvedName: null,
     resultAddress: null,
   }
@@ -13,6 +14,7 @@ const ensResolveDomainName = async (domainName, web3Client) => {
   // Set the resolver name and address
   result.resolverAddress = web3Client.chain.contracts.ensUniversalResolver.address
   result.resolverChainId = web3Client.chain.id
+  result.resolverChainRpc = web3Client.chain.rpcUrls.default.http[0]
 
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)
@@ -31,6 +33,7 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
     resolver: 'ens',
     resolverAddress: null,
     resolverChainId: null,
+    resolverChainRpc: null,
     resolvedName: null,
     resultAddress: null,
     resultChainId: null,
@@ -45,6 +48,7 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
   // Set the resolver name and address
   result.resolverAddress = web3Client.chain.contracts.ensUniversalResolver.address
   result.resolverChainId = web3Client.chain.id
+  result.resolverChainRpc = web3Client.chain.rpcUrls.default.http[0]
 
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)

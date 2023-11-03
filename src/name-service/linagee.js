@@ -59,6 +59,7 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, web3Client, chain
     resolver: 'linagee',
     resolverAddress: null,
     resolverChainId: null,
+    resolverChainRpc: null,
     resolvedName: null,
     resultAddress: null,
     resultChainId: null,

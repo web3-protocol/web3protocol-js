@@ -37,6 +37,7 @@ class Client {
         resolver: null,
         resolverAddress: null,
         resolverChainId: null,
+        resolverChainRpc: null,
         resolvedName: null,
         resultAddress: null,
         resultChainId: null,
@@ -50,6 +51,7 @@ class Client {
 
       contractAddress: null,
       chainId: null,
+      chainRpc: null,
       
       // Web3 resolve mode: 'auto', 'manual' or 'resourceRequest'
       mode: null,
@@ -106,6 +108,7 @@ class Client {
     }
     // Find the matching chain. Will throw an error if not found
     let web3chain = this.#createChainForViem(result.chainId)
+    result.chainRpc = web3chain.rpcUrls.default.http[0]
 
     // Prepare the web3 client
     let web3Client = createPublicClient({
@@ -141,6 +144,8 @@ class Client {
           result.chainId = resolutionInfos.resultChainId
 
           web3chain = this.#createChainForViem(resolutionInfos.resultChainId)
+          result.chainRpc = web3chain.rpcUrls.default.http[0]
+
           web3Client = createPublicClient({
             chain: web3chain,
             transport: http(),
@@ -213,6 +218,24 @@ class Client {
       parseResourceRequestUrl(result, urlMainParts.path)
     }
 
+
+    // If contract call mode is method, prepare calldata
+    if (result.contractCallMode == 'method') {
+      let abi = [
+        {
+          inputs: result.methodArgs,
+          name: result.methodName,
+          stateMutability: 'view',
+          type: 'function',
+        },
+      ];
+      result.calldata = encodeFunctionData({
+        abi: abi,
+        args: result.methodArgValues,
+        functionName: result.methodName,
+      })
+    }
+
     return result
   }
 
@@ -232,23 +255,6 @@ class Client {
       chain: web3chain,
       transport: http(),
     });
-
-    // Method call: Compute calldata
-    if (parsedUrl.contractCallMode == 'method') {
-      let abi = [
-        {
-          inputs: parsedUrl.methodArgs,
-          name: parsedUrl.methodName,
-          stateMutability: 'view',
-          type: 'function',
-        },
-      ];
-      parsedUrl.calldata = encodeFunctionData({
-        abi: abi,
-        args: parsedUrl.methodArgValues,
-        functionName: parsedUrl.methodName,
-      })
-    }
 
     // Do the contract call
     let rawOutput = await web3Client.call({

@@ -181,7 +181,7 @@ async function parseAutoUrlArgument(argument, web3Client) {
         if(argValueStr.substr(2).length != 2 * typeSize) {
           throw new Error("Argument has not the correct size: " + argValueStr);
         }
-        result.value = "0x" + argValueStr.substr(2).padStart(32 * 2, "0")
+        result.value = argValueStr
       }
     }
     else if(typeWithoutSize == "address") {
