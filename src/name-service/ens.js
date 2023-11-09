@@ -35,14 +35,15 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
     resolverChainId: null,
     resolverChainRpc: null,
     resolvedName: null,
-    resultAddress: null,
-    resultChainId: null,
     // Enum, possibilities are
     // - direct: Direct domain name to address translation
     // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
     resolutionType: null,
     // If resolutionType is erc6821, contains the content of the TXT record
     erc6821ContentContractTxt: null,
+    // Result of the resolution
+    resultAddress: null,
+    resultChainId: null,
   }
 
   // Set the resolver name and address

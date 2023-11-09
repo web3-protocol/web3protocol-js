@@ -39,14 +39,15 @@ class Client {
         resolverChainId: null,
         resolverChainRpc: null,
         resolvedName: null,
-        resultAddress: null,
-        resultChainId: null,
         // Enum, possibilities are
         // - direct: Direct domain name to address translation
         // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
         resolutionType: 'direct',
         // If resolutionType is erc6821, contains the content of the TXT record
         erc6821ContentContractTxt: null,
+        // Result of the resolution
+        resultAddress: null,
+        resultChainId: null,
       },
 
       contractAddress: null,
