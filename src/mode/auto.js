@@ -58,21 +58,63 @@ async function parseAutoUrl(result, path, web3Client) {
   if(returnsParam && returnsParam.length >= 2) {
     // When we have a return definition, we returns everything as JSON
 
-    returnsParamParts = returnsParam.substr(1, returnsParam.length - 2).split(',').map(returnType => returnType.trim()).filter(x => x != '')
+    // First and last char must be "(" and ")"
+    if(returnsParam.substr(0, 1) != "(" || returnsParam.substr(returnsParam.length - 1) != ")") {
+      throw new Error("Invalid returns argument");
+    }
 
-    if(returnsParamParts == 0) {
+    // Decode the return value recursively (tuples)
+    let recReturnDecodeFn = function(recReturnDecodeFn, textToDecode) {
+      let result = []
+  
+      // Separate parts
+      let parts = []
+      if(textToDecode.length > 0) {
+        let tupleDeepness = 0
+        let lastCommaPos = -1
+        for(let i = 0; i < textToDecode.length; i++) {
+          if(textToDecode[i] == "(") {
+            tupleDeepness++
+          }
+          else if(textToDecode[i] == ")") {
+            tupleDeepness--
+          }
+          else if(textToDecode[i] == "," && tupleDeepness == 0) {
+            parts.push(textToDecode.substr(lastCommaPos + 1, i - lastCommaPos - 1))
+            lastCommaPos = i
+          }
+        }
+        parts.push(textToDecode.substr(lastCommaPos + 1))
+      }
+
+      // Process parts
+      for(let i = 0; i < parts.length; i++) {
+        // Look for tuple
+        let tupleMatch = parts[i].match(/^\((?<tupleComponents>.+)\)(?<arrayDef>[\[\]0-9]*)$/)
+        if(tupleMatch) {
+          let tupleComponents = recReturnDecodeFn(recReturnDecodeFn, tupleMatch.groups.tupleComponents)
+          result.push({type: "tuple" + tupleMatch.groups.arrayDef, components: tupleComponents})
+        }
+        // Basic type
+        else {
+          // Check if type is valid. Will throw an error is type is invalid.
+          parseAbiParameter(parts[i] + " xx") // " xx" is necessary (name of var)
+          result.push({type: parts[i]})
+        }
+      }
+
+      return result
+    }
+    returnsParamTypes = recReturnDecodeFn(recReturnDecodeFn, returnsParam.substr(1, returnsParam.length - 2));
+
+    if(returnsParamTypes == 0) {
       // ?returns=() => We returns the raw bytes json-encoded
       result.contractReturnProcessing = 'jsonEncodeRawBytes';
     }
     else {
       // ?returns=(aa,bb) => We json-encode the abi-decoded values
       result.contractReturnProcessing = 'jsonEncodeValues';
-      result.contractReturnProcessingOptions.jsonEncodedValueTypes = []
-      for(let i = 0; i < returnsParamParts.length; i++) {
-        // Check if type is valid. Will throw an error is type is invalid.
-        parseAbiParameter(returnsParamParts[i] + " xx")
-        result.contractReturnProcessingOptions.jsonEncodedValueTypes.push({type: returnsParamParts[i]})
-      }
+      result.contractReturnProcessingOptions.jsonEncodedValueTypes = returnsParamTypes
     }
   }
 
