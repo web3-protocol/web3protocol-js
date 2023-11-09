@@ -17,9 +17,10 @@ let chainList = getDefaultChainList()
 let web3Client = new Client(chainList)
 
 let fetchedWeb3Url = await web3Client.fetchUrl("web3://0xA5aFC9fE76a28fB12C60954Ed6e2e5f8ceF64Ff2/resourceName")
-// fetchedWeb3Url.httpCode = 200
-// fetchedWeb3Url.httpHeaders = {}
-// fetchedWeb3Url.output = Uint8Array(3) [ 63, 63, 63 ]
+// Returns:
+// fetchedWeb3Url.httpCode == 200
+// fetchedWeb3Url.httpHeaders == {}
+// fetchedWeb3Url.output == Uint8Array(3) [ 63, 63, 63 ]
 
 ```
 
@@ -27,6 +28,7 @@ Fetch a ``web3://`` URL, get an HTTP status code, HTTP response headers and a by
 
 ``getDefaultChainList()`` is provided as a quick way to launch (mix of RPC URLs provided by the [Viem.sh](https://viem.sh/) library and the [chainid.network](https://chainid.network/chains.json) website), but be aware this could sometimes get out of date.
 
+Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-js), a simple CURL-like app; [EVM Browser](https://github.com/nand2/evm-browser), a ``web3://`` electron-based web browser.
 
 ## Supported standards
 
