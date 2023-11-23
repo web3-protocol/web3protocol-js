@@ -1,7 +1,7 @@
 import * as mime from 'mime-types'
 import { parseAbiParameter } from 'viem';
 
-import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index'
+import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index.js'
 
 
 async function parseAutoUrl(result, path, web3Client) {

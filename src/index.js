@@ -3,7 +3,7 @@ import { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToByte
 import { parseManualUrl }  from './mode/manual.js';
 import { parseAutoUrl } from './mode/auto.js';
 import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
-import { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } from './name-service/index';
+import { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } from './name-service/index.js';
 
 
 class Client {

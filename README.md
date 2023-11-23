@@ -8,7 +8,7 @@ Parse and execute [ERC-6860](https://eips.ethereum.org/EIPS/eip-6860) ``web3://`
 
 ```js
 import { Client } from 'web3protocol';
-import { getDefaultChainList } from 'web3protocol/src/chains/index.js';
+import { getDefaultChainList } from 'web3protocol/chains';
 
 // Get a prepared chain list that you can optionally alter, or provide your own
 let chainList = getDefaultChainList()
