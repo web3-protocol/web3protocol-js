@@ -1,5 +1,5 @@
-const { normalize: ensNormalize } = require('viem/ens')
-const { stringToHex } = require('viem');
+import { normalize as ensNormalize } from 'viem/ens'
+import { stringToHex } from 'viem'
 
 const linagee = {
   address :"0x6023E55814DC00F094386d4eb7e17Ce49ab1A190",
@@ -124,4 +124,4 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, web3Client, chain
 }
 
 
-module.exports = { linageeResolveDomainName, linageeResolveDomainNameInclErc6821 };
+export { linageeResolveDomainName, linageeResolveDomainNameInclErc6821 };

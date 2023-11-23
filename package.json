@@ -2,15 +2,19 @@
   "name": "web3protocol",
   "version": "0.3.3",
   "description": "Parse and execute ERC-6860 web3:// URLs",
-  "main": "src/index.js",
+  "type": "module",
+  "export": "./src/index.js",
   "author": "nand2",
   "license": "MIT",
+  "engines": {
+    "node": ">=16"
+  },
   "devDependencies": {
     "jest": "^29.5.0",
     "toml": "3.0.0"
   },
   "scripts": {
-    "test": "jest"
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
   "dependencies": {
     "mime-types": "^2.1.35",

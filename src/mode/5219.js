@@ -1,4 +1,4 @@
-const { decodeAbiParameters, hexToBytes } = require('viem');
+import { decodeAbiParameters, hexToBytes } from 'viem'
 
 /**
  * ERC-5219 mode, as introduced via ERC-6944
@@ -54,4 +54,4 @@ function processResourceRequestContractReturn(fetchedUrl, contractReturn) {
   fetchedUrl.output = hexToBytes(decodedContractReturn[1])
 }
 
-module.exports = { parseResourceRequestUrl, processResourceRequestContractReturn }
+export { parseResourceRequestUrl, processResourceRequestContractReturn }

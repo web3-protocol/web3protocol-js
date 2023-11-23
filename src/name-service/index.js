@@ -1,5 +1,5 @@
-const { ensResolveDomainName, ensResolveDomainNameInclErc6821 } = require('./ens.js')
-const { linageeResolveDomainName, linageeResolveDomainNameInclErc6821 } = require('./linagee.js')
+import { ensResolveDomainName, ensResolveDomainNameInclErc6821 } from './ens.js'
+import { linageeResolveDomainName, linageeResolveDomainNameInclErc6821 } from './linagee.js'
 
 // For a given domain and chain, return a eligible resolver (ens, ...)
 const getEligibleDomainNameResolver = (domainName, web3chain) => {
@@ -57,4 +57,4 @@ const resolveDomainNameInclErc6821 = async (domainNameResolver, domainName, web3
 }
 
 
-module.exports = { getEligibleDomainNameResolver, resolveDomainName, resolveDomainNameInclErc6821 };
+export { getEligibleDomainNameResolver, resolveDomainName, resolveDomainNameInclErc6821 };

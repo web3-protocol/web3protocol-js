@@ -1,7 +1,7 @@
-const mime = require('mime-types')
-const { parseAbiParameter } = require('viem');
+import * as mime from 'mime-types'
+import { parseAbiParameter } from 'viem';
 
-const { getEligibleDomainNameResolver, resolveDomainName } = require('../name-service/index')
+import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index'
 
 
 async function parseAutoUrl(result, path, web3Client) {
@@ -105,7 +105,7 @@ async function parseAutoUrl(result, path, web3Client) {
 
       return result
     }
-    returnsParamTypes = recReturnDecodeFn(recReturnDecodeFn, returnsParam.substr(1, returnsParam.length - 2));
+    let returnsParamTypes = recReturnDecodeFn(recReturnDecodeFn, returnsParam.substr(1, returnsParam.length - 2));
 
     if(returnsParamTypes == 0) {
       // ?returns=() => We returns the raw bytes json-encoded
@@ -298,4 +298,4 @@ async function parseAutoUrlArgument(argument, web3Client) {
   return result;
 }
 
-module.exports = { parseAutoUrl }
+export { parseAutoUrl }

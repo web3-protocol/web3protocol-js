@@ -1,4 +1,4 @@
-const mime = require('mime-types')
+import * as mime from 'mime-types'
 
 function parseManualUrl(result, path) {
   // Path must be at least "/"
@@ -28,4 +28,4 @@ function parseManualUrl(result, path) {
   result.calldata = callData
 }
 
-module.exports = { parseManualUrl }
+export { parseManualUrl }

@@ -1,5 +1,5 @@
-const chainListJsonFileChains = require('./chainlist.js')
-let viemChains = require('viem/chains');
+import * as viemChains from 'viem/chains'
+import {default as chainListJsonFileChains} from './chainlist.js'
 
 
 function getDefaultChainList() {
@@ -65,4 +65,4 @@ function getDefaultChainList() {
 }
 
 
-module.exports = { getDefaultChainList }
+export { getDefaultChainList }

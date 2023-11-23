@@ -1,9 +1,9 @@
-const toml = require('toml');
-const fs = require("fs");
-const { hexToBytes, bytesToString } = require('viem');
+import * as toml from 'toml';
+import * as fs from "fs";
+import { hexToBytes, bytesToString } from 'viem';
 
-const { Client } = require('../src');
-const { getDefaultChainList } = require('../src/chains')
+import { Client } from '../src/index.js';
+import { getDefaultChainList } from '../src/chains/index.js';
 
 const testSuiteFiles = [
   "tests/tests/parsing-base.toml",
@@ -50,7 +50,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
           // Prepare a chain list
           let chainList = getDefaultChainList()
           // Create a new web3:// client
-          web3Client = new Client(chainList)
+          let web3Client = new Client(chainList)
 
           // Several types of tests
           // Test type: Parsing URL
@@ -127,7 +127,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
           // Test type: Contract return processing
           else if(testSuite.type == 'contractReturnProcessing') {
             // Create and populate a parsedUrl
-            parsedUrl = {
+            let parsedUrl = {
               contractReturnProcessing: tst.contractReturnProcessing,
               contractReturnProcessingOptions: {
                 mimeType: tst.decodedABIEncodedBytesMimeType,
@@ -142,7 +142,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
             }
 
             // Execute the processing
-            fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, tst.contractReturn)
+            let fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, tst.contractReturn)
 
             if(tst.output) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
@@ -168,7 +168,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
               return
             }
 
-            fetchedWeb3Url = await web3Client.fetchUrl(tst.url)
+            let fetchedWeb3Url = await web3Client.fetchUrl(tst.url)
 
             if(tst.output) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))

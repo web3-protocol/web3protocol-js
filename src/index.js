@@ -1,9 +1,9 @@
-const { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } = require('viem');
+import { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } from 'viem';
 
-const { parseManualUrl } = require('./mode/manual');
-const { parseAutoUrl } = require('./mode/auto');
-const { parseResourceRequestUrl, processResourceRequestContractReturn } = require('./mode/5219');
-const { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } = require('./name-service/index')
+import { parseManualUrl }  from './mode/manual.js';
+import { parseAutoUrl } from './mode/auto.js';
+import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
+import { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } from './name-service/index';
 
 
 class Client {
@@ -342,4 +342,4 @@ class Client {
   }
 }
 
-module.exports = { Client };
+export { Client };

@@ -1,5 +1,5 @@
-const { normalize: ensNormalize, namehash } = require('viem/ens')
-const { encodeFunctionData, decodeFunctionResult } = require('viem');
+import { normalize as ensNormalize, namehash } from 'viem/ens'
+import { encodeFunctionData, decodeFunctionResult } from 'viem'
 
 const ensResolveDomainName = async (domainName, web3Client) => {
   let result = {
@@ -101,4 +101,4 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
   return result
 }
 
-module.exports = { ensResolveDomainName, ensResolveDomainNameInclErc6821 };
+export { ensResolveDomainName, ensResolveDomainNameInclErc6821 };
