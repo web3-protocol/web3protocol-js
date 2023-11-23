@@ -39,9 +39,9 @@ Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-j
 - [ERC-6944](https://eips.ethereum.org/EIPS/eip-6944) (draft) / [ERC-5219](https://eips.ethereum.org/EIPS/eip-5219) : New mode offloading some parsing processing on the browser side
 - Not standard : Linagee .og domain names
 
-### Upcoming features
+### Partially implemented features
 
-- [ERC-7087](https://github.com/ethereum/EIPs/pull/7087) (pending) : Auto mode : Add more flexibility to specify the MIME type.
+- [ERC-7087](https://github.com/ethereum/ERCs/pull/98) (pending) : Auto mode : Add new features for auto mode.
 
 
 ## Testing
