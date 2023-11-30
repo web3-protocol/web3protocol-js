@@ -4,7 +4,7 @@ import { parseAbiParameter } from 'viem';
 import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index.js'
 
 
-async function parseAutoUrl(result, path, web3Client) {
+async function parseAutoUrl(result, path, chainClient) {
   // If "/" is called, call the contract with empty calldata
   if(path === undefined || path == "" || path == "/") {
     result.contractCallMode = 'calldata'
@@ -42,7 +42,7 @@ async function parseAutoUrl(result, path, web3Client) {
   // Determine args
   pathnameParts = pathnameParts.slice(2)
   for(let i = 0; i < pathnameParts.length; i++) {
-    let parsedArgument = await parseAutoUrlArgument(pathnameParts[i], web3Client)
+    let parsedArgument = await parseAutoUrlArgument(pathnameParts[i], chainClient)
     result.methodArgs.push({type: parsedArgument.type})
     result.methodArgValues.push(parsedArgument.value)
   }
@@ -157,7 +157,7 @@ async function parseAutoUrl(result, path, web3Client) {
   }
 }
 
-async function parseAutoUrlArgument(argument, web3Client) {
+async function parseAutoUrlArgument(argument, chainClient) {
   let result = {
     type: null,
     value: null
@@ -233,10 +233,10 @@ async function parseAutoUrlArgument(argument, web3Client) {
       }
       // Domain name
       else {
-        let domainNameResolver = getEligibleDomainNameResolver(argValueStr, web3Client.chain)
+        let domainNameResolver = getEligibleDomainNameResolver(argValueStr, chainClient.infos().id)
         if(domainNameResolver) {
           // Will throw an error if failure
-          let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, web3Client);
+          let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, chainClient);
           result.value = nameResolution.resultAddress
         }
         else {
@@ -282,11 +282,11 @@ async function parseAutoUrlArgument(argument, web3Client) {
     }
     // Fallback autodetection: It must be a domain name
     else {
-      let domainNameResolver = getEligibleDomainNameResolver(argValueStr, web3Client.chain)
+      let domainNameResolver = getEligibleDomainNameResolver(argValueStr, chainClient.infos().id)
       if(domainNameResolver) {
         result.type = "address"
         // Will throw an error if failure
-        let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, web3Client);
+        let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, chainClient);
         result.value = nameResolution.resultAddress
       }
       else {

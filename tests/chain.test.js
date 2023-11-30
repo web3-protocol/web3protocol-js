@@ -1,4 +1,4 @@
-const { getChainIdByShortName, createChainForViem } = require('../src/chains/index');
+import { getChainIdByShortName, createChainForViem } from '../src/chains/index';
 
 const tests = [
   {

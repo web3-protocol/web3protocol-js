@@ -31,7 +31,7 @@ const linagee = {
   }
 }
 
-const linageeResolveDomainName = async (domainName, web3Client) => {
+const linageeResolveDomainName = async (domainName, chainClient) => {
   let result = {
     resolver: 'linagee',
     resolverAddress: null,
@@ -40,8 +40,8 @@ const linageeResolveDomainName = async (domainName, web3Client) => {
     resultAddress: null,
   }
 
-  let address = await web3Client.readContract({ 
-    address: linagee.address,
+  let {decodedResult: address} = await chainClient.callContract({ 
+    contractAddress: linagee.address,
     abi: linagee.abi,
     functionName: "resolve",
     args: [ensNormalize(domainName)]
@@ -54,7 +54,7 @@ const linageeResolveDomainName = async (domainName, web3Client) => {
   return result
 }
 
-const linageeResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList) => {
+const linageeResolveDomainNameInclErc6821 = async (domainName, chainClient, chainList) => {
   let result = {
     resolver: 'linagee',
     resolverAddress: null,
@@ -75,12 +75,13 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, web3Client, chain
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)
 
-  result.erc6821ContentContractTxt = await web3Client.readContract({ 
-    address: linagee.address,
+  let {decodedResult: contentContractTxt} = await chainClient.callContract({ 
+    contractAddress: linagee.address,
     abi: linagee.abi,
     functionName: "getTextRecord",
     args: [linagee.domainAsBytes32(result.resolvedName), 'contentcontract']
   });
+  result.erc6821ContentContractTxt = contentContractTxt
 
   // contentcontract TXT case
   if(result.erc6821ContentContractTxt) {
@@ -116,7 +117,7 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, web3Client, chain
   else {
     result.resolutionType = 'direct'
 
-    let nameResolution = await linageeResolveDomainName(domainName, web3Client, result);
+    let nameResolution = await linageeResolveDomainName(domainName, chainList, result);
     result.resultAddress = nameResolution.resultAddress;
   }
 

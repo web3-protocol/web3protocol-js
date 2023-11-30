@@ -1,16 +1,19 @@
-import { createPublicClient, http, decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } from 'viem';
+import { decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } from 'viem';
 
 import { parseManualUrl }  from './mode/manual.js';
 import { parseAutoUrl } from './mode/auto.js';
 import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
 import { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } from './name-service/index.js';
+import { ChainClientProvider } from './chains/client.js'
 
 
 class Client {
   #chainList = []
+  #chainClientProvider = null
 
   constructor(chainList) {
     this.#chainList = chainList
+    this.#chainClientProvider = new ChainClientProvider(chainList)
   }
 
   /**
@@ -20,7 +23,7 @@ class Client {
 
     let parsedUrl = await this.parseUrl(url)
     let contractReturn = await this.fetchContractReturn(parsedUrl)
-    let result = await this.processContractReturn(parsedUrl, contractReturn)
+    let result = await this.processContractReturn(parsedUrl, contractReturn.data)
 
     return result;
   }
@@ -107,15 +110,8 @@ class Client {
     if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
       result.chainId = parseInt(urlMainParts.chainId);
     }
-    // Find the matching chain. Will throw an error if not found
-    let web3chain = this.#createChainForViem(result.chainId)
-    result.chainRpc = web3chain.rpcUrls.default.http[0]
-
-    // Prepare the web3 client
-    let web3Client = createPublicClient({
-      chain: web3chain,
-      transport: http(),
-    });
+    // Prepare the chain client
+    let chainClient = this.#chainClientProvider.getChainClient(result.chainId)
 
     // Contract address / Domain name
     // Is the hostname an ethereum address? 
@@ -124,12 +120,12 @@ class Client {
     } 
     // Hostname is not an ethereum address, try name resolution
     else {
-      let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, web3chain);
+      let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.infos().id);
       if(domainNameResolver) {
         // Do the name resolution
         let resolutionInfos = null
         try {
-          resolutionInfos = await resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, web3Client, this.#chainList)
+          resolutionInfos = await resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
         }
         catch(err) {
           throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
@@ -140,17 +136,11 @@ class Client {
 
         // Set contractAddress address
         result.contractAddress = resolutionInfos.resultAddress
-        // We got an address on another chain? Update the chainId and the web3Client
+        // We got an address on another chain? Update the chainId and the chainClient
         if(resolutionInfos.resultChainId) {
           result.chainId = resolutionInfos.resultChainId
 
-          web3chain = this.#createChainForViem(resolutionInfos.resultChainId)
-          result.chainRpc = web3chain.rpcUrls.default.http[0]
-
-          web3Client = createPublicClient({
-            chain: web3chain,
-            transport: http(),
-          });
+          chainClient = this.#chainClientProvider.getChainClient(result.chainId)
         }
       }
       // Domain name not supported in this chain
@@ -183,7 +173,7 @@ class Client {
       args: [],
     })
     try {
-      let rawOutput = await web3Client.call({
+      let rawOutput = await chainClient.call({
         to: result.contractAddress,
         data: result.modeDeterminationCalldata,
       })
@@ -213,7 +203,7 @@ class Client {
       parseManualUrl(result, urlMainParts.path)
     }
     else if(result.mode == 'auto') {
-      await parseAutoUrl(result, urlMainParts.path, web3Client)
+      await parseAutoUrl(result, urlMainParts.path, chainClient)
     }
     else if(result.mode == 'resourceRequest') {
       parseResourceRequestUrl(result, urlMainParts.path)
@@ -245,30 +235,16 @@ class Client {
    */
   async fetchContractReturn(parsedUrl) {
 
-    // Find the matching chain
-    let web3chain = this.#createChainForViem(parsedUrl.chainId)
-    if(web3chain == null) {
-      throw new Error('No chain found for id ' + parsedUrl.chainId);
-    }
-
-    // Prepare the web3 client
-    let web3Client = createPublicClient({
-      chain: web3chain,
-      transport: http(),
-    });
+    // Prepare the chain client
+    let chainClient = this.#chainClientProvider.getChainClient(parsedUrl.chainId)
 
     // Do the contract call
-    let rawOutput = await web3Client.call({
+    let callOutput = await chainClient.call({
       to: parsedUrl.contractAddress,
-      data: parsedUrl.calldata
+      input: parsedUrl.calldata
     })
 
-    // Looks like this is what happens when calling non-contracts
-    if(rawOutput.data === undefined) {
-      throw new Error("Looks like the address is not a contract.");
-    }
-
-    return rawOutput.data;
+    return callOutput;
   }
 
   /**
@@ -322,24 +298,6 @@ class Client {
   }
 
 
-  // Create a web3 client in the format accepted by the viem.sh lib
-  #createChainForViem(chainId) {
-    const chain = Object.values(this.#chainList).find(chain => chain.id == chainId)
-    if(chain == undefined) {
-      throw new Error("Chain not found for id " + chainId)
-    }
-    let viewChain = {
-      id: chain.id,
-      name: chain.name,
-      shortName: chain.shortName,
-      rpcUrls: {
-        default: { http: chain.rpcUrls },
-      },
-      contracts: chain.contracts,
-    }
-
-    return viewChain
-  }
 }
 
 export { Client };

@@ -1,7 +1,7 @@
 import { normalize as ensNormalize, namehash } from 'viem/ens'
 import { encodeFunctionData, decodeFunctionResult } from 'viem'
 
-const ensResolveDomainName = async (domainName, web3Client) => {
+const ensResolveDomainName = async (domainName, chainClient) => {
   let result = {
     resolver: 'ens',
     resolverAddress: null,
@@ -11,15 +11,45 @@ const ensResolveDomainName = async (domainName, web3Client) => {
     resultAddress: null,
   }
 
-  // Set the resolver name and address
-  result.resolverAddress = web3Client.chain.contracts.ensUniversalResolver.address
-  result.resolverChainId = web3Client.chain.id
-  result.resolverChainRpc = web3Client.chain.rpcUrls.default.http[0]
-
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)
 
-  let address = await web3Client.getEnsAddress({ name: result.resolvedName });
+  // Get resolver
+  const nameHash = namehash(result.resolvedName)
+  const getResolverAbi = [{
+    type: 'function',
+    name: 'resolver',
+    inputs: [{type: 'bytes32'}],
+    outputs: [{type: 'address'}],
+    stateMutability: 'view',
+  }];
+  const {callResult: resolverAddressCall, decodedResult: resolverAddress} = await chainClient.callContract({
+    abi: getResolverAbi,
+    contractAddress: chainClient.infos().contracts.ensRegistry.address,
+    functionName: 'resolver',
+    args: [nameHash]
+  })
+
+  // Set the resolver name and address
+  result.resolverAddress = resolverAddress
+  result.resolverChainId = chainClient.infos().id
+  result.resolverChainRpc = resolverAddressCall.rpcUrls[resolverAddressCall.rpcUrlUsedIndex]
+
+  // Get address
+  const getAddressAbi = [{
+    type: 'function',
+    name: 'addr',
+    inputs: [{type: 'bytes32'}],
+    outputs: [{type: 'address'}],
+    stateMutability: 'view',
+  }];
+  const {callResult: getAddrCall, decodedResult: address} = await chainClient.callContract({
+    abi: getAddressAbi,
+    contractAddress: resolverAddress,
+    functionName: 'addr',
+    args: [nameHash]
+  })
+
   if(address == null || address == "0x0000000000000000000000000000000000000000") {
     throw new Error("Unable to resolve the argument as an ethereum .eth address")
   }
@@ -28,7 +58,7 @@ const ensResolveDomainName = async (domainName, web3Client) => {
   return result
 }
 
-const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList) => {
+const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainList) => {
   let result = {
     resolver: 'ens',
     resolverAddress: null,
@@ -46,19 +76,46 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
     resultChainId: null,
   }
 
-  // Set the resolver name and address
-  result.resolverAddress = web3Client.chain.contracts.ensUniversalResolver.address
-  result.resolverChainId = web3Client.chain.id
-  result.resolverChainRpc = web3Client.chain.rpcUrls.default.http[0]
-
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)
 
-   // Get the contentcontract TXT record
-  result.erc6821ContentContractTxt = await web3Client.getEnsText({
-    name: result.resolvedName,
-    key: 'contentcontract',
-  });
+  // Get resolver
+  const nameHash = namehash(result.resolvedName)
+  const getResolverAbi = [{
+    type: 'function',
+    name: 'resolver',
+    inputs: [{type: 'bytes32'}],
+    outputs: [{type: 'address'}],
+    stateMutability: 'view',
+  }];
+  const {callResult: resolverAddressCall, decodedResult: resolverAddress} = await chainClient.callContract({
+    abi: getResolverAbi,
+    contractAddress: chainClient.infos().contracts.ensRegistry.address,
+    functionName: 'resolver',
+    args: [nameHash]
+  })
+
+  // Set the resolver name and address
+  result.resolverAddress = resolverAddress
+  result.resolverChainId = chainClient.infos().id
+  result.resolverChainRpc = resolverAddressCall.rpcUrls[resolverAddressCall.rpcUrlUsedIndex]
+
+  // Get ENS text
+  const getTextAbi = [{
+    type: 'function',
+    name: 'text',
+    inputs: [{type: 'bytes32'}, {type: 'string'}],
+    outputs: [{type: 'string'}],
+    stateMutability: 'view',
+  }];
+  const {callResult: getTextCall, decodedResult: contentContractTxt} = await chainClient.callContract({
+    abi: getTextAbi,
+    contractAddress: resolverAddress,
+    functionName: 'text',
+    args: [nameHash, "contentcontract"]
+  })
+  result.erc6821ContentContractTxt = contentContractTxt
+
 
   // contentcontract TXT case
   if(result.erc6821ContentContractTxt) {
@@ -94,7 +151,7 @@ const ensResolveDomainNameInclErc6821 = async (domainName, web3Client, chainList
   else {
     result.resolutionType = 'direct'
 
-    let nameResolution = await ensResolveDomainName(domainName, web3Client, result)
+    let nameResolution = await ensResolveDomainName(domainName, chainClient, result)
     result = {...result, ...nameResolution}
   }
 
