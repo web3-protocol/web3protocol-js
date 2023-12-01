@@ -34,22 +34,32 @@ const linagee = {
 const linageeResolveDomainName = async (domainName, chainClient) => {
   let result = {
     resolver: 'linagee',
-    resolverAddress: null,
-    resolverChainId: null,
+    resolverChainId: chainClient.chain().id,
     resolvedName: null,
+    // The call for domain resolution
+    resolveNameCall: null,
     resultAddress: null,
   }
 
-  let {decodedResult: address} = await chainClient.callContract({ 
+  // We normalize the domain name
+  result.resolvedName = ensNormalize(domainName)
+
+  result.resolveNameCall = {
     contractAddress: linagee.address,
+    chainId: chainClient.chain().id,
+    result: null,
+  }
+  result.resolveNameCall.result = await chainClient.callContract({ 
+    contractAddress: result.resolveNameCall.contractAddress,
     abi: linagee.abi,
     functionName: "resolve",
-    args: [ensNormalize(domainName)]
+    args: [result.resolvedName]
   });
-  if(address == "0x0000000000000000000000000000000000000000") {
+
+  if(result.resolveNameCall.result.decodedResult == "0x0000000000000000000000000000000000000000") {
     throw new Error("Unable to resolve the argument as an ethereum .og address")
   }
-  result.resultAddress = address;
+  result.resultAddress = result.resolveNameCall.result.decodedResult;
 
   return result
 }
@@ -57,10 +67,15 @@ const linageeResolveDomainName = async (domainName, chainClient) => {
 const linageeResolveDomainNameInclErc6821 = async (domainName, chainClient, chainList) => {
   let result = {
     resolver: 'linagee',
-    resolverAddress: null,
-    resolverChainId: null,
-    resolverChainRpc: null,
+    resolverChainId: chainClient.chain().id,
+    // The name about ot be resolved
     resolvedName: null,
+    // The optional call to get the domain resolver (ENS does that)
+    fetchNameResolverCall: null,
+    // The call for the TXT record for the ERC-6821 record
+    erc6821ContentContractTxtCall: null,
+    // The optional call for domain resolution (unused if ERC-6821 resolution is successful)
+    resolveNameCall: null,
     // Enum, possibilities are
     // - direct: Direct domain name to address translation
     // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
@@ -75,13 +90,19 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, chainClient, chai
   // We normalize the domain name
   result.resolvedName = ensNormalize(domainName)
 
-  let {decodedResult: contentContractTxt} = await chainClient.callContract({ 
+  // Fetch the contentcontract TXT value
+  result.erc6821ContentContractTxtCall = {
     contractAddress: linagee.address,
+    chainId: chainClient.chain().id,
+    result: null
+  }
+  result.erc6821ContentContractTxtCall.result = await chainClient.callContract({ 
+    contractAddress: result.erc6821ContentContractTxtCall.contractAddress,
     abi: linagee.abi,
     functionName: "getTextRecord",
     args: [linagee.domainAsBytes32(result.resolvedName), 'contentcontract']
   });
-  result.erc6821ContentContractTxt = contentContractTxt
+  result.erc6821ContentContractTxt = result.erc6821ContentContractTxtCall.result.decodedResult
 
   // contentcontract TXT case
   if(result.erc6821ContentContractTxt) {
@@ -117,7 +138,7 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, chainClient, chai
   else {
     result.resolutionType = 'direct'
 
-    let nameResolution = await linageeResolveDomainName(domainName, chainList, result);
+    let nameResolution = await linageeResolveDomainName(domainName, chainClient);
     result.resultAddress = nameResolution.resultAddress;
   }
 

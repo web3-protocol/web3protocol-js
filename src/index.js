@@ -23,7 +23,7 @@ class Client {
 
     let parsedUrl = await this.parseUrl(url)
     let contractReturn = await this.fetchContractReturn(parsedUrl)
-    let result = await this.processContractReturn(parsedUrl, contractReturn.data)
+    let result = await this.processContractReturn(parsedUrl, contractReturn)
 
     return result;
   }
@@ -38,10 +38,16 @@ class Client {
         // - ens
         // - linagee (for .og domains)
         resolver: null,
-        resolverAddress: null,
+        // The chain where the resolution will take place
         resolverChainId: null,
-        resolverChainRpc: null,
+        // The name about ot be resolved
         resolvedName: null,
+        // Struct: The optional call to get the domain resolver (ENS does that).
+        fetchNameResolverCall: null,
+        // Struct: The call for the TXT record for the ERC-6821 record
+        erc6821ContentContractTxtCall: null,
+        // Struct: The optional call for domain resolution (unused if ERC-6821 resolution is successful)
+        resolveNameCall: null,
         // Enum, possibilities are
         // - direct: Direct domain name to address translation
         // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
@@ -120,7 +126,7 @@ class Client {
     } 
     // Hostname is not an ethereum address, try name resolution
     else {
-      let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.infos().id);
+      let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
       if(domainNameResolver) {
         // Do the name resolution
         let resolutionInfos = null
@@ -257,12 +263,15 @@ class Client {
       httpCode: 200,
       httpHeaders: {},
       output: [], // Array of uint8 (bytes array)
+      // The result of processing of step 1 parseUrl()
       parsedUrl: parsedUrl,
+      // The result of processing of step 2 fetchContractReturn()
+      fetchedContractReturn: contractReturn,
     }
 
     if(parsedUrl.contractReturnProcessing == 'decodeABIEncodedBytes') {
       // Do the ABI decoding, receive the bytes in hex string format
-      let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn)
+      let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn.data)
       // Convert it into a Uint8Array byte buffer
       fetchedUrl.output = hexToBytes(decodedContractReturn[0])
 
@@ -272,7 +281,7 @@ class Client {
     }
     else if(parsedUrl.contractReturnProcessing == 'jsonEncodeRawBytes') {
       // JSON-encode the contract return in hex string format inside an array
-      let jsonData = JSON.stringify([contractReturn])
+      let jsonData = JSON.stringify([contractReturn.data])
       // Convert it into a Uint8Array byte buffer
       fetchedUrl.output = stringToBytes(jsonData)
 
@@ -280,7 +289,7 @@ class Client {
     }
     else if(parsedUrl.contractReturnProcessing == 'jsonEncodeValues') {
       // Do the ABI decoding, get the vars
-      let decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn)
+      let decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn.data)
       // JSON-encode them
       // (If we have some bigInts, convert them into hex string)
       let jsonEncodedValues = JSON.stringify(decodedContractReturn, 
@@ -291,7 +300,7 @@ class Client {
       fetchedUrl.httpHeaders['Content-Type'] = 'application/json'
     }
     else if(parsedUrl.contractReturnProcessing == 'decodeErc5219Request') {
-      processResourceRequestContractReturn(fetchedUrl, contractReturn)
+      processResourceRequestContractReturn(fetchedUrl, contractReturn.data)
     } 
 
     return fetchedUrl;

@@ -137,12 +137,12 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
             // Expected failure
             if(tst.error) {
-              await expect(async () => {await web3Client.processContractReturn(parsedUrl, tst.contractReturn)}).rejects.toThrowError()
+              await expect(async () => {await web3Client.processContractReturn(parsedUrl, {data: tst.contractReturn})}).rejects.toThrowError()
               return
             }
 
             // Execute the processing
-            let fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, tst.contractReturn)
+            let fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, {data: tst.contractReturn})
 
             if(tst.output) {
               expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))

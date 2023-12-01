@@ -64,6 +64,7 @@ class ChainClient {
     const decodedResult = decodeFunctionResult({abi: args.abi, functionName: args.functionName, data: callResult.data})
 
     return {
+      calldata,
       callResult,
       decodedResult,
     }
@@ -120,7 +121,7 @@ class ChainClient {
       }
       catch(err) {
         // We log the error
-        rpcUrlsErrors.push(err)
+        rpcUrlsErrors.push(err.toString())
         // Then We try the next RPC
       }
     }
@@ -134,7 +135,7 @@ class ChainClient {
     return {data: output, rpcUrls, rpcUrlUsedIndex, rpcUrlsErrors}
   }
 
-  infos() {
+  chain() {
     return this.#chain
   }
 }
