@@ -129,7 +129,7 @@ class ChainClient {
     // All RPCs calls failed? 
     if(rpcUrlUsedIndex == rpcUrls.length) {
       // Throw an error with the individual RPC errors
-      throw new RPCsError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0].message, rpcUrls, rpcUrlsErrors)
+      throw new RPCsError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0], rpcUrls, rpcUrlsErrors)
     }
     
     return {data: output, rpcUrls, rpcUrlUsedIndex, rpcUrlsErrors}
