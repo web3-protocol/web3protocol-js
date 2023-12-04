@@ -262,7 +262,7 @@ class Client {
     let fetchedUrl = {
       httpCode: 200,
       httpHeaders: {},
-      output: [], // Array of uint8 (bytes array)
+      output: null, // Readable stream 
       // The result of processing of step 1 parseUrl()
       parsedUrl: parsedUrl,
       // The result of processing of step 2 fetchContractReturn()
@@ -273,7 +273,16 @@ class Client {
       // Do the ABI decoding, receive the bytes in hex string format
       let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn.data)
       // Convert it into a Uint8Array byte buffer
-      fetchedUrl.output = hexToBytes(decodedContractReturn[0])
+      let outputBytes = hexToBytes(decodedContractReturn[0])
+      // Make it a readable stream
+      fetchedUrl.output = new ReadableStream({
+        type: "bytes",
+        start(controller) {
+          if(outputBytes.length > 0)
+            controller.enqueue(outputBytes);
+          controller.close();
+        }
+      });
 
       if(parsedUrl.contractReturnProcessingOptions.mimeType) {
         fetchedUrl.httpHeaders['Content-Type'] = parsedUrl.contractReturnProcessingOptions.mimeType
@@ -283,7 +292,16 @@ class Client {
       // JSON-encode the contract return in hex string format inside an array
       let jsonData = JSON.stringify([contractReturn.data])
       // Convert it into a Uint8Array byte buffer
-      fetchedUrl.output = stringToBytes(jsonData)
+      let outputBytes = stringToBytes(jsonData)
+      // Make it a readable stream
+      fetchedUrl.output = new ReadableStream({
+        type: "bytes",
+        start(controller) {
+          if(outputBytes.length > 0)
+            controller.enqueue(outputBytes);
+          controller.close();
+        }
+      });
 
       fetchedUrl.httpHeaders['Content-Type'] = 'application/json'
     }
@@ -295,12 +313,21 @@ class Client {
       let jsonEncodedValues = JSON.stringify(decodedContractReturn, 
         (key, value) => typeof value === "bigint" ? "0x" + value.toString(16) : value)
       // Convert it into a Uint8Array byte buffer
-      fetchedUrl.output = stringToBytes(jsonEncodedValues)
+      let outputBytes = stringToBytes(jsonEncodedValues)
+      // Make it a readable stream
+      fetchedUrl.output = new ReadableStream({
+        type: "bytes",
+        start(controller) {
+          if(outputBytes.length > 0)
+            controller.enqueue(outputBytes);
+          controller.close();
+        }
+      });
 
       fetchedUrl.httpHeaders['Content-Type'] = 'application/json'
     }
     else if(parsedUrl.contractReturnProcessing == 'decodeErc5219Request') {
-      processResourceRequestContractReturn(fetchedUrl, contractReturn.data)
+      processResourceRequestContractReturn(this, fetchedUrl, contractReturn.data)
     } 
 
     return fetchedUrl;

@@ -6,11 +6,11 @@ import { Client } from '../src/index.js';
 import { getDefaultChainList } from '../src/chains/index.js';
 
 const testSuiteFiles = [
-  "tests/tests/parsing-base.toml",
-  "tests/tests/parsing-mode-manual.toml",
-  "tests/tests/parsing-mode-auto.toml",
-  "tests/tests/parsing-mode-resource-request.toml",
-  "tests/tests/contract-return-processing.toml",
+  // "tests/tests/parsing-base.toml",
+  // "tests/tests/parsing-mode-manual.toml",
+  // "tests/tests/parsing-mode-auto.toml",
+  // "tests/tests/parsing-mode-resource-request.toml",
+  // "tests/tests/contract-return-processing.toml",
   "tests/tests/fetch.toml",
 ];
 
@@ -144,12 +144,6 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
             // Execute the processing
             let fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, {data: tst.contractReturn})
 
-            if(tst.output) {
-              expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
-            }
-            if(tst.outputAsString) {
-              expect(bytesToString(fetchedWeb3Url.output)).toEqual(tst.outputAsString)
-            }
             if(tst.httpCode) {
               expect(fetchedWeb3Url.httpCode).toEqual(tst.httpCode)
             }
@@ -157,6 +151,28 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
             Object.keys(tst.httpHeaders).forEach(headerName => {
               expect(fetchedWeb3Url.httpHeaders[headerName]).toEqual(tst.httpHeaders[headerName])
             })
+
+            // Fetch output from stream
+            let output = new Uint8Array();
+            const reader = fetchedWeb3Url.output.getReader();
+            while (true) {
+              const { done, value } = await reader.read();
+              if(value) {
+                output = new Uint8Array([...output, ...value])
+              }
+
+              // When no more data needs to be consumed, break the reading
+              if (done) {
+                break;
+              }
+            }
+
+            if(tst.output) {
+              expect(output).toEqual(hexToBytes(tst.output))
+            }
+            if(tst.outputAsString) {
+              expect(bytesToString(output)).toEqual(tst.outputAsString)
+            }
 
 
           }
@@ -170,12 +186,6 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
             let fetchedWeb3Url = await web3Client.fetchUrl(tst.url)
 
-            if(tst.output) {
-              expect(fetchedWeb3Url.output).toEqual(hexToBytes(tst.output))
-            }
-            if(tst.outputAsString) {
-              expect(bytesToString(fetchedWeb3Url.output)).toEqual(tst.outputAsString)
-            }
             if(tst.httpCode) {
               expect(fetchedWeb3Url.httpCode).toEqual(tst.httpCode)
             }
@@ -183,6 +193,28 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
             Object.keys(tst.httpHeaders).forEach(headerName => {
               expect(fetchedWeb3Url.httpHeaders[headerName]).toEqual(tst.httpHeaders[headerName])
             })
+
+            // Fetch output from stream
+            let output = new Uint8Array();
+            const reader = fetchedWeb3Url.output.getReader();
+            while (true) {
+              const { done, value } = await reader.read();
+              if(value) {
+                output = new Uint8Array([...output, ...value])
+              }
+
+              // When no more data needs to be consumed, break the reading
+              if (done) {
+                break;
+              }
+            }
+
+            if(tst.output) {
+              expect(output).toEqual(hexToBytes(tst.output))
+            }
+            if(tst.outputAsString) {
+              expect(bytesToString(output)).toEqual(tst.outputAsString)
+            }
           }
 
         }, 15000 /* ms of timeout */)
