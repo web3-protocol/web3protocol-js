@@ -53,18 +53,19 @@ function processResourceRequestContractReturn(client, fetchedUrl, contractReturn
   }
   // Convert it into a Uint8Array byte buffer
   let outputBytes = hexToBytes(decodedContractReturn[1])
-  // Make it a readable stream
+  
+  // Prepare the readable stream
   fetchedUrl.output = new ReadableStream({
     type: "bytes",
     async start(controller) {
       if(outputBytes.length > 0)
         controller.enqueue(outputBytes);
 
-      async function getNextChunk(responseHttpHeaders) {
-        let nextChunkUrl = responseHttpHeaders["web3-next-chunk"];
-
+      // Experimental support for chunking -- needs to be finalized and put on an ERC
+      // Recursive fetching of next chunks
+      async function getNextChunk(nextChunkUrl) {
         // End? We close the stream
-        if(nextChunkUrl === undefined) {
+        if(nextChunkUrl === undefined || nextChunkUrl == "") {
           controller.close();
           return;
         }
@@ -84,15 +85,15 @@ function processResourceRequestContractReturn(client, fetchedUrl, contractReturn
         if(outputBytes.length > 0)
           controller.enqueue(outputBytes);        
 
-        // Prepare headers and loop again
-        let nextChunkResponseHttpHeaders = []
-        for(let i = 0; i < nextChunkDecodedContractReturn[2].length; i++) {
-          nextChunkResponseHttpHeaders[nextChunkDecodedContractReturn[2][i][0]] = nextChunkDecodedContractReturn[2][i][1];
-        }
+        // Loop headers, find next chunk
+        let nextChunkHeader = nextChunkDecodedContractReturn[2].find(header => header[0] == "web3-next-chunk");
+        nextChunkUrl = nextChunkHeader ? nextChunkHeader[1] : "";
 
-        await getNextChunk(nextChunkResponseHttpHeaders);
+        await getNextChunk(nextChunkUrl);
       }
-      await getNextChunk(fetchedUrl.httpHeaders);
+
+      // Get next chunk, if any
+      await getNextChunk(fetchedUrl.httpHeaders["web3-next-chunk"]);
     }
   });
 }

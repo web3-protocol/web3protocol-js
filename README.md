@@ -20,11 +20,11 @@ let fetchedWeb3Url = await web3Client.fetchUrl("web3://0xA5aFC9fE76a28fB12C60954
 // Returns:
 // fetchedWeb3Url.httpCode == 200
 // fetchedWeb3Url.httpHeaders == {}
-// fetchedWeb3Url.output == Uint8Array(3) [ 63, 63, 63 ]
+// fetchedWeb3Url.output == ReadableStream returning bytes [ 63, 63, 63 ]
 
 ```
 
-Fetch a ``web3://`` URL, get an HTTP status code, HTTP response headers and a bytes array (represented as an array of uint8).
+Fetch a ``web3://`` URL, get an HTTP status code, HTTP response headers and a ReadableStream.
 
 ``getDefaultChainList()`` is provided as a quick way to launch (mix of RPC URLs provided by the [Viem.sh](https://viem.sh/) library and the [chainid.network](https://chainid.network/chains.json) website), but be aware this could sometimes get out of date.
 

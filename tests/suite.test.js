@@ -6,11 +6,11 @@ import { Client } from '../src/index.js';
 import { getDefaultChainList } from '../src/chains/index.js';
 
 const testSuiteFiles = [
-  // "tests/tests/parsing-base.toml",
-  // "tests/tests/parsing-mode-manual.toml",
-  // "tests/tests/parsing-mode-auto.toml",
-  // "tests/tests/parsing-mode-resource-request.toml",
-  // "tests/tests/contract-return-processing.toml",
+  "tests/tests/parsing-base.toml",
+  "tests/tests/parsing-mode-manual.toml",
+  "tests/tests/parsing-mode-auto.toml",
+  "tests/tests/parsing-mode-resource-request.toml",
+  "tests/tests/contract-return-processing.toml",
   "tests/tests/fetch.toml",
 ];
 
