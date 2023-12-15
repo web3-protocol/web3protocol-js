@@ -20,8 +20,6 @@
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
   "dependencies": {
-    "@chainsafe/blst": "^0.2.4",
-    "@lodestar/prover": "^1.12.0",
     "mime-types": "^2.1.35",
     "undici": "^5.28.1",
     "viem": "1.17.2"
