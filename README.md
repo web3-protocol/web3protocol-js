@@ -43,6 +43,17 @@ Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-j
 
 - [ERC-7087](https://github.com/ethereum/ERCs/pull/98) (pending) : Auto mode : Add new features for auto mode.
 
+## Options
+
+The client takes the following options:
+
+```
+let web3Client = new Client(chainList, {
+  multipleRpcMode: "fallback"
+})
+```
+
+- multipleRpcMode (``fallback`` or ``parallel``) : If a chain have multiple RPC configured, by default the ``fallback`` mode is used (first one is used, then if failure, the second one, and so on). In the ``parallel`` mode, a call is sent simultaneously to all RPCs, and the first one answering is used.
 
 ## Testing
 
