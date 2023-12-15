@@ -1,6 +1,6 @@
 {
   "name": "web3protocol",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Parse and execute ERC-6860 web3:// URLs",
   "type": "module",
   "exports": {
