@@ -1,4 +1,4 @@
-import { fetch } from 'undici'
+import fetch from 'cross-fetch'
 import { encodeFunctionData, decodeFunctionResult } from 'viem'
 
 /**
