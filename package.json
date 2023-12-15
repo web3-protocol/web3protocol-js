@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "cross-fetch": "^4.0.0",
-    "mime-types": "^2.1.35",
+    "mime": "^4.0.0",
     "viem": "1.17.2"
   }
 }

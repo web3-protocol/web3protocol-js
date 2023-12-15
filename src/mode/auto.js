@@ -1,4 +1,4 @@
-import * as mime from 'mime-types'
+import mime from 'mime';
 import { parseAbiParameter } from 'viem';
 
 import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index.js'
@@ -26,8 +26,8 @@ async function parseAutoUrl(result, path, chainClient) {
   // Determine mime, if set
   let argValueParts = pathnameParts[pathnameParts.length - 1].split('.')
   if(argValueParts.length > 1) {
-    let specifiedMimeType = mime.lookup(argValueParts[argValueParts.length - 1])
-    if(specifiedMimeType != false) {
+    let specifiedMimeType = mime.getType(argValueParts[argValueParts.length - 1])
+    if(specifiedMimeType != null) {
       result.contractReturnProcessingOptions.mimeType = specifiedMimeType
     }
   }
@@ -144,8 +144,8 @@ async function parseAutoUrl(result, path, chainClient) {
       if(/^[a-zA-Z0-9]+$/.test(mimeFieldValue) == false) {
         throw new Error("Invalid filename extension: " + mimeFieldValue)
       }
-      let matchingMimeType = mime.lookup(mimeFieldValue)
-      if(matchingMimeType != false) {
+      let matchingMimeType = mime.getType(mimeFieldValue)
+      if(matchingMimeType != null) {
         result.contractReturnProcessingOptions.mimeType = matchingMimeType
       }
     }

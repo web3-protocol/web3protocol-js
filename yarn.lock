@@ -1750,17 +1750,10 @@ micromatch@^4.0.4:
     braces "^3.0.2"
     picomatch "^2.3.1"
 
-mime-db@1.52.0:
-  version "1.52.0"
-  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.52.0.tgz#bbabcdc02859f4987301c856e3387ce5ec43bf70"
-  integrity sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==
-
-mime-types@^2.1.35:
-  version "2.1.35"
-  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.35.tgz#381a871b62a734450660ae3deee44813f70d959a"
-  integrity sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==
-  dependencies:
-    mime-db "1.52.0"
+mime@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/mime/-/mime-4.0.0.tgz#ae999669db9568c31a8da18dff6c696663f65486"
+  integrity sha512-pzhgdeqU5pJ9t5WK9m4RT4GgGWqYJylxUf62Yb9datXRwdcw5MjiD1BYI5evF8AgTXN9gtKX3CFLvCUL5fAhEA==
 
 mimic-fn@^2.1.0:
   version "2.1.0"

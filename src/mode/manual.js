@@ -1,4 +1,4 @@
-import * as mime from 'mime-types'
+import mime from 'mime';
 
 function parseManualUrl(result, path) {
   // Path must be at least "/"
@@ -15,8 +15,8 @@ function parseManualUrl(result, path) {
   let pathname = matchResult.groups.pathname
   let pathnameParts = pathname.split('.')
   if(pathnameParts.length > 1) {
-    let specifiedMimeType = mime.lookup(pathnameParts[pathnameParts.length - 1])
-    if(specifiedMimeType != false) {
+    let specifiedMimeType = mime.getType(pathnameParts[pathnameParts.length - 1])
+    if(specifiedMimeType != null) {
       result.contractReturnProcessingOptions.mimeType = specifiedMimeType
     }
   }
