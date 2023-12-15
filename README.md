@@ -2,7 +2,7 @@
 
 [![npm version](https://badge.fury.io/js/web3protocol.svg)](https://www.npmjs.com/package/web3protocol)
 
-Parse and execute [ERC-6860](https://eips.ethereum.org/EIPS/eip-6860) ``web3://`` URLs. Used by [EVM Browser](https://github.com/nand2/evm-browser) to browse ``web3://`` on-chain websites.
+Parse and execute [ERC-6860 / ERC-4804 ``web3://`` protocol](https://eips.ethereum.org/EIPS/eip-6860) URLs. Used by [EVM Browser](https://github.com/nand2/evm-browser) to browse ``web3://`` on-chain websites.
 
 ## Usage
 
@@ -43,6 +43,17 @@ Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-j
 
 - [ERC-7087](https://github.com/ethereum/ERCs/pull/98) (pending) : Auto mode : Add new features for auto mode.
 
+## Options
+
+The client takes the following options:
+
+```
+let web3Client = new Client(chainList, {
+  multipleRpcMode: "fallback"
+})
+```
+
+- multipleRpcMode (``fallback`` or ``parallel``) : If a chain have multiple RPC configured, by default the ``fallback`` mode is used (first one is used, then if failure, the second one, and so on). In the ``parallel`` mode, a call is sent simultaneously to all RPCs, and the first one answering is used.
 
 ## Testing
 
