@@ -10,10 +10,25 @@ import { ChainClientProvider } from './chains/client.js'
 class Client {
   #chainList = []
   #chainClientProvider = null
+  #opts = []
 
-  constructor(chainList) {
+  constructor(chainList, opts) {
     this.#chainList = chainList
-    this.#chainClientProvider = new ChainClientProvider(chainList)
+    this.#opts = {...{
+      // Enum, possibilities are
+      // - fallback: One is tried after the other
+      // - parallel : All RPCs are called in parralel, the first to answer is used
+      multipleRpcMode: 'fallback'
+    }, ...opts}
+
+    // Manual enum check...
+    if(this.#opts.multipleRpcMode != 'fallback' && this.#opts.multipleRpcMode != 'parallel') {
+      throw new Error("Bad value for multipleRpcMode option. Valid values: fallback, parallel")
+    }
+
+    this.#chainClientProvider = new ChainClientProvider(chainList, {
+      multipleRpcMode: this.#opts.multipleRpcMode
+    })
   }
 
   /**
