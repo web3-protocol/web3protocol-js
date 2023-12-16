@@ -45,6 +45,7 @@ class ChainClientProvider {
 class ChainClient {
   #chain = null
   #opts = []
+  #rpcCallCounters = {}
 
   constructor(chain, opts) {
     this.#chain = chain
@@ -162,9 +163,14 @@ class ChainClient {
   }
 
   async #rpcCall(rpcUrl, args) {
+    if(this.#rpcCallCounters[rpcUrl] === undefined) {
+      this.#rpcCallCounters[rpcUrl] = 0;
+    }
+    this.#rpcCallCounters[rpcUrl]++;
+
     let postData = {
       jsonrpc: "2.0", 
-      id: 1,
+      id: this.#rpcCallCounters[rpcUrl],
       method: "eth_call",
       params:[
         args,
