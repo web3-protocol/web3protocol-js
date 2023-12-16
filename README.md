@@ -47,13 +47,21 @@ Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-j
 
 The client takes the following options:
 
-```
+```js
 let web3Client = new Client(chainList, {
   multipleRpcMode: "fallback"
 })
 ```
 
 - multipleRpcMode (``fallback`` or ``parallel``) : If a chain have multiple RPC configured, by default the ``fallback`` mode is used (first one is used, then if failure, the second one, and so on). In the ``parallel`` mode, a call is sent simultaneously to all RPCs, and the first one answering is used.
+
+If you want to edit the chain list from getDefaultChainList(), to, for example, edit the RPCs of a chain, edit the chain list before giving it to the client : 
+
+```js
+let chainList = getDefaultChainList()
+chainList.find(chain => chain.id == <chainId>).rpcUrls = ['https://<yourRPC>', 'https://<yourSecondRPC>', ...];
+let web3Client = new Client(chainList)
+```
 
 ## Testing
 
