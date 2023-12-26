@@ -3,13 +3,14 @@ import { decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } fr
 import { parseManualUrl }  from './mode/manual.js';
 import { parseAutoUrl } from './mode/auto.js';
 import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
-import { getEligibleDomainNameResolver, resolveDomainNameInclErc6821 } from './name-service/index.js';
+import { Resolver } from './name-service/index.js';
 import { ChainClientProvider } from './chains/client.js'
 
 
 class Client {
   #chainList = []
   #chainClientProvider = null
+  #resolver = null
   #opts = []
 
   constructor(chainList, opts) {
@@ -18,7 +19,10 @@ class Client {
       // Enum, possibilities are
       // - fallback: One is tried after the other
       // - parallel : All RPCs are called in parralel, the first to answer is used
-      multipleRpcMode: 'fallback'
+      multipleRpcMode: 'fallback',
+
+      // Options for caching of domain names.
+      resolverCache: null,
     }, ...opts}
 
     // Manual enum check...
@@ -29,6 +33,8 @@ class Client {
     this.#chainClientProvider = new ChainClientProvider(chainList, {
       multipleRpcMode: this.#opts.multipleRpcMode
     })
+
+    this.#resolver = new Resolver(this.#opts.resolverCache);
   }
 
   /**
@@ -141,12 +147,12 @@ class Client {
     } 
     // Hostname is not an ethereum address, try name resolution
     else {
-      let domainNameResolver = getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
+      let domainNameResolver = this.#resolver.getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
       if(domainNameResolver) {
         // Do the name resolution
         let resolutionInfos = null
         try {
-          resolutionInfos = await resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
+          resolutionInfos = await this.#resolver.resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
         }
         catch(err) {
           throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
@@ -224,7 +230,7 @@ class Client {
       parseManualUrl(result, urlMainParts.path)
     }
     else if(result.mode == 'auto') {
-      await parseAutoUrl(result, urlMainParts.path, chainClient)
+      await parseAutoUrl(result, urlMainParts.path, chainClient, this.#resolver)
     }
     else if(result.mode == 'resourceRequest') {
       parseResourceRequestUrl(result, urlMainParts.path)

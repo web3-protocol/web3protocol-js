@@ -1,10 +1,8 @@
 import mime from 'mime';
 import { parseAbiParameter } from 'viem';
 
-import { getEligibleDomainNameResolver, resolveDomainName } from '../name-service/index.js'
 
-
-async function parseAutoUrl(result, path, chainClient) {
+async function parseAutoUrl(result, path, chainClient, resolver) {
   // If "/" is called, call the contract with empty calldata
   if(path === undefined || path == "" || path == "/") {
     result.contractCallMode = 'calldata'
@@ -233,10 +231,10 @@ async function parseAutoUrlArgument(argument, chainClient) {
       }
       // Domain name
       else {
-        let domainNameResolver = getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
+        let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
         if(domainNameResolver) {
           // Will throw an error if failure
-          let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, chainClient);
+          let nameResolution = await resolver.resolveDomainName(domainNameResolver, argValueStr, chainClient);
           result.value = nameResolution.resultAddress
         }
         else {
@@ -282,11 +280,11 @@ async function parseAutoUrlArgument(argument, chainClient) {
     }
     // Fallback autodetection: It must be a domain name
     else {
-      let domainNameResolver = getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
+      let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
       if(domainNameResolver) {
         result.type = "address"
         // Will throw an error if failure
-        let nameResolution = await resolveDomainName(domainNameResolver, argValueStr, chainClient);
+        let nameResolution = await resolver.resolveDomainName(domainNameResolver, argValueStr, chainClient);
         result.value = nameResolution.resultAddress
       }
       else {
