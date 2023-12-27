@@ -4,13 +4,15 @@ import { parseManualUrl }  from './mode/manual.js';
 import { parseAutoUrl } from './mode/auto.js';
 import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
 import { Resolver } from './name-service/index.js';
+import { Determinator as ResolveModeDeterminator } from './mode/determinator.js';
 import { ChainClientProvider } from './chains/client.js'
 
 
 class Client {
   #chainList = []
   #chainClientProvider = null
-  #resolver = null
+  #domainNameResolver = null
+  #resolveModeDeterminator = null
   #opts = []
 
   constructor(chainList, opts) {
@@ -23,6 +25,9 @@ class Client {
 
       // Options for caching of domain names.
       resolverCache: null,
+
+      // Options for caching of resolve modes.
+      resolveModeCache: null,
     }, ...opts}
 
     // Manual enum check...
@@ -34,7 +39,9 @@ class Client {
       multipleRpcMode: this.#opts.multipleRpcMode
     })
 
-    this.#resolver = new Resolver(this.#opts.resolverCache);
+    this.#domainNameResolver = new Resolver(this.#opts.resolverCache);
+
+    this.#resolveModeDeterminator = new ResolveModeDeterminator(this.#opts.resolveModeCache);
   }
 
   /**
@@ -147,12 +154,12 @@ class Client {
     } 
     // Hostname is not an ethereum address, try name resolution
     else {
-      let domainNameResolver = this.#resolver.getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
+      let domainNameResolver = this.#domainNameResolver.getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
       if(domainNameResolver) {
         // Do the name resolution
         let resolutionInfos = null
         try {
-          resolutionInfos = await this.#resolver.resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
+          resolutionInfos = await this.#domainNameResolver.resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
         }
         catch(err) {
           throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
@@ -183,46 +190,10 @@ class Client {
     // - Manual : we forward all the path & arguments as calldata
     // - ResourceRequest : we parse the path and arguments and send them
 
-    // Default is auto
-    result.mode = "auto"
-
-    // Detect if the contract is another mode
-    let resolveModeAbi = [{
-      inputs: [],
-      name: 'resolveMode',
-      outputs: [{type: 'bytes32'}],
-      stateMutability: 'view',
-      type: 'function',
-    }];
-    result.modeDeterminationCalldata = encodeFunctionData({
-      abi: resolveModeAbi,
-      functionName: 'resolveMode',
-      args: [],
-    })
-    try {
-      let rawOutput = await chainClient.call({
-        to: result.contractAddress,
-        data: result.modeDeterminationCalldata,
-      })
-      if(rawOutput.data !== undefined) {
-        result.modeDeterminationReturn = rawOutput.data;
-      }
-    }
-    catch(err) {/** If call to resolveMode fails, we default to auto */}
-
-    let resolveModeAsString = ''
-    if(result.modeDeterminationReturn) {
-      resolveModeAsString = Buffer.from(result.modeDeterminationReturn.substr(2), "hex").toString().replace(/\0/g, '');
-    }
-    if(['', 'auto', 'manual', '5219'].indexOf(resolveModeAsString) === -1) {
-      throw new Error("web3 resolveMode '" + resolveModeAsString + "' is not supported")
-    }
-    if(resolveModeAsString == "manual") {
-      result.mode = 'manual';
-    }
-    if(resolveModeAsString == "5219") {
-      result.mode = 'resourceRequest';
-    }
+    const resolveModeDeterminationResult = await this.#resolveModeDeterminator.determineResolveMode(chainClient, result.contractAddress)
+    result.mode = resolveModeDeterminationResult.mode
+    result.modeDeterminationCalldata = resolveModeDeterminationResult.calldata
+    result.modeDeterminationReturn = resolveModeDeterminationResult.return
 
 
     // Parse the URL per the selected mode
@@ -230,7 +201,7 @@ class Client {
       parseManualUrl(result, urlMainParts.path)
     }
     else if(result.mode == 'auto') {
-      await parseAutoUrl(result, urlMainParts.path, chainClient, this.#resolver)
+      await parseAutoUrl(result, urlMainParts.path, chainClient, this.#domainNameResolver)
     }
     else if(result.mode == 'resourceRequest') {
       parseResourceRequestUrl(result, urlMainParts.path)
