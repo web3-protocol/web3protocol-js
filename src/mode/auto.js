@@ -40,7 +40,7 @@ async function parseAutoUrl(result, path, chainClient, resolver) {
   // Determine args
   pathnameParts = pathnameParts.slice(2)
   for(let i = 0; i < pathnameParts.length; i++) {
-    let parsedArgument = await parseAutoUrlArgument(pathnameParts[i], chainClient)
+    let parsedArgument = await parseAutoUrlArgument(pathnameParts[i], chainClient, resolver)
     result.methodArgs.push({type: parsedArgument.type})
     result.methodArgValues.push(parsedArgument.value)
   }
@@ -155,7 +155,7 @@ async function parseAutoUrl(result, path, chainClient, resolver) {
   }
 }
 
-async function parseAutoUrlArgument(argument, chainClient) {
+async function parseAutoUrlArgument(argument, chainClient, resolver) {
   let result = {
     type: null,
     value: null
