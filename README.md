@@ -50,17 +50,24 @@ The client takes the following options:
 ```js
 let web3Client = new Client(chainList, {
   multipleRpcMode: "fallback",
-  resolverCache: {
+  domainNameResolverCache: {
+    maxEntries: 256,
+    maxAgeSeconds: 30 * 60,
+  },
+  resolveModeDeterminatorCache: {
     maxEntries: 256,
     maxAgeSeconds: 30 * 60,
   },
 })
 ```
 
-- multipleRpcMode (``fallback`` or ``parallel``) : If a chain have multiple RPC configured, by default the ``fallback`` mode is used (first one is used, then if failure, the second one, and so on). In the ``parallel`` mode, a call is sent simultaneously to all RPCs, and the first one answering is used.
-- ``resolverCache``: An object of options for domain name resolution caching. May be ``null`` to use default options. Otherwise, the object may specify:
+- ``multipleRpcMode`` (``fallback`` or ``parallel``) : If a chain have multiple RPC configured, by default the ``fallback`` mode is used (first one is used, then if failure, the second one, and so on). In the ``parallel`` mode, a call is sent simultaneously to all RPCs, and the first one answering is used.
+- ``domainNameResolverCache``: An object of options for domain name resolution caching. May be ``null`` to use default options. Otherwise, the object may specify:
     - ``maxEntries``: The maximum number of cached entries. After this, the least-recently-used entry is dropped. Use zero to disable caching.
     - ``maxAgeSeconds``: The maximum number of seconds before a resolution result is no longer considered valid.
+- ``resolveModeDeterminatorCache``: An object of options for resolve mode determination caching. May be ``null`` to use default options. Otherwise, the object may specify:
+    - ``maxEntries``: The maximum number of cached entries. After this, the least-recently-used entry is dropped. Use zero to disable caching.
+    - ``maxAgeSeconds``: The maximum number of seconds before a determination result is no longer considered valid.
 
 If you want to edit the chain list from getDefaultChainList(), to, for example, edit the RPCs of a chain, edit the chain list before giving it to the client : 
 

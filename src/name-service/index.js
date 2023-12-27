@@ -3,7 +3,7 @@ import { linageeResolveDomainName, linageeResolveDomainNameInclErc6821 } from '.
 
 // An optionally-caching resolver for domain names.
 class Resolver {
-  #contents = null
+  #cache = null
   #opts = []
 
   constructor(opts) {
@@ -19,7 +19,7 @@ class Resolver {
       // considered valid.
       maxAgeSeconds: 30 * 60,
     }, ...opts}
-    this.#contents = new Map();
+    this.#cache = new Map();
   }
 
    #cacheKey(resolveMode, domainNameResolver, domainName, chainClient) {
@@ -27,17 +27,17 @@ class Resolver {
   }
 
   async #resolve(cacheKey, doResolveFn) {
-    if (this.#opts.maxEntries <= 0) {
+    if (this.#opts.maxEntries <= 0 || this.#opts.maxAgeSeconds <= 0) {
       // Cache disabled.
       return await doResolveFn();
     }
     const nowMillis = Date.now();
-    const cached = this.#contents.get(cacheKey);
+    const cached = this.#cache.get(cacheKey);
     if (cached !== undefined) {
       // Unconditionally delete in order to maybe refresh later.
-      this.#contents.delete(cached);
+      this.#cache.delete(cacheKey);
       if (cached.expiresMillis > nowMillis) {
-        this.#contents.set(cacheKey, cached); // Refresh entry.
+        this.#cache.set(cacheKey, cached); // Refresh entry.
         return cached.value;
       }
     }
@@ -48,18 +48,18 @@ class Resolver {
     };
 
     // A concurrent request may have raced with this one; check.
-    const raceEntry = this.#contents.get(cacheKey);
+    const raceEntry = this.#cache.get(cacheKey);
     if (raceEntry !== undefined) {
-      this.#contents.delete(raceEntry);
+      this.#cache.delete(cacheKey);
       if (raceEntry.expiresMillis >= entry.expiresMillis) {
         // The other entry is fresher, so use it.
-        this.#contents.set(cacheKey, raceEntry);
+        this.#cache.set(cacheKey, raceEntry);
         return raceEntry.value;
       }
     }
-    this.#contents.set(cacheKey, entry);
-    while (this.#contents.size > this.#opts.maxEntries) {
-      this.#contents.delete(this.#contents.keys().next().value);
+    this.#cache.set(cacheKey, entry);
+    while (this.#cache.size > this.#opts.maxEntries) {
+      this.#cache.delete(this.#cache.keys().next().value);
     }
     return result;
   }

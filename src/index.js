@@ -3,7 +3,7 @@ import { decodeAbiParameters, hexToBytes, stringToBytes, encodeFunctionData } fr
 import { parseManualUrl }  from './mode/manual.js';
 import { parseAutoUrl } from './mode/auto.js';
 import { parseResourceRequestUrl, processResourceRequestContractReturn } from './mode/5219.js';
-import { Resolver } from './name-service/index.js';
+import { Resolver as DomainNameResolver } from './name-service/index.js';
 import { Determinator as ResolveModeDeterminator } from './mode/determinator.js';
 import { ChainClientProvider } from './chains/client.js'
 
@@ -24,10 +24,10 @@ class Client {
       multipleRpcMode: 'fallback',
 
       // Options for caching of domain names.
-      resolverCache: null,
+      domainNameResolverCache: null,
 
       // Options for caching of resolve modes.
-      resolveModeCache: null,
+      resolveModeDeterminatorCache: null,
     }, ...opts}
 
     // Manual enum check...
@@ -39,9 +39,9 @@ class Client {
       multipleRpcMode: this.#opts.multipleRpcMode
     })
 
-    this.#domainNameResolver = new Resolver(this.#opts.resolverCache);
+    this.#domainNameResolver = new DomainNameResolver(this.#opts.domainNameResolverCache);
 
-    this.#resolveModeDeterminator = new ResolveModeDeterminator(this.#opts.resolveModeCache);
+    this.#resolveModeDeterminator = new ResolveModeDeterminator(this.#opts.resolveModeDeterminatorCache);
   }
 
   /**
