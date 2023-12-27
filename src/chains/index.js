@@ -46,9 +46,12 @@ function getDefaultChainList() {
     }
 
     // Final manual overrides :
-    // Ethereum: Cloudflare seems to be flaky lately, use publicnode.com
+    // Ethereum mainnet :
+    // Viem gives us https://cloudflare-eth.com as the only RPC, but this RPC
+    // is flaky (weirdly, for ENS resolution calls, it tends to randomly revert execution)
+    // So we add publicnode as the primary one, use cloudflare as the fallback
     if(originalChain.chainId == 1) {
-      defaultRpcs = ["https://ethereum.publicnode.com"]
+      defaultRpcs = ['https://ethereum.publicnode.com', 'https://cloudflare-eth.com']
     }
 
     let newChain = {

@@ -192,9 +192,14 @@ class ChainClient {
 
     const json = await response.json()
 
+    if(json.error) {
+      throw new Error("RPC returned an error: " + json.error.message);
+    }
+
     if(json.result === undefined || json.result === "" || json.result == "0x") {
       throw new Error("No data returned");
     }
+    
 
     // We got some data!
     return json.result;
