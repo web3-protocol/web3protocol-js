@@ -264,7 +264,7 @@ async function parseAutoUrlArgument(argument, chainClient, resolver) {
       result.type = "uint256"
       result.value = BigInt(argValueStr)
     }
-    // Autodetect addreess, bytes32, bytes
+    // Autodetect address, bytes32, bytes
     else if(/^0x([0-9a-fA-F][0-9a-fA-F])+$/.test(argValueStr)) {
       result.value = argValueStr
       // Determine type
@@ -277,6 +277,11 @@ async function parseAutoUrlArgument(argument, chainClient, resolver) {
       else {
         result.type = "bytes"
       }
+    }
+    // Autodetect bool
+    else if(argValueStr == "true" || argValueStr == "false") {
+      result.type = "bool"
+      result.value = argValueStr == "true"
     }
     // Fallback autodetection: It must be a domain name
     else {
