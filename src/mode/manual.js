@@ -1,4 +1,5 @@
 import mime from 'mime';
+import { Buffer } from 'buffer';
 
 function parseManualUrl(result, path) {
   // Path must be at least "/"

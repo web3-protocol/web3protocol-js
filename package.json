@@ -1,6 +1,6 @@
 {
   "name": "web3protocol",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "Parse and execute ERC-6860 web3:// URLs",
   "type": "module",
   "exports": {
@@ -20,6 +20,7 @@
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
   "dependencies": {
+    "buffer": "6.0.3",
     "cross-fetch": "^4.0.0",
     "mime": "^4.0.0",
     "viem": "1.17.2"

@@ -1,4 +1,5 @@
 import { encodeFunctionData } from 'viem';
+import { Buffer } from 'buffer';
 
 class Determinator {
   #cache = new Map();
