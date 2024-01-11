@@ -33,7 +33,7 @@ async function parseAutoUrl(result, path, chainClient, resolver) {
   // Determine method name
   let methodName = pathnameParts[1];
   if(methodName.match(/^[a-zA-Z$_][a-zA-Z0-9$_]*$/) == null) {
-    throw new Error("Invalid method name");
+    throw new Error("Invalid method name: " + methodName);
   }
   result.methodName = methodName;
 

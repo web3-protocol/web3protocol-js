@@ -60,44 +60,157 @@ class Client {
    * Step 1 : Parse the URL and determine how we are going to call the main contract.
    */
   async parseUrl(url) {
-    let result = {
-      nameResolution: {
-        // Enum, possibilities are
-        // - ens
-        // - linagee (for .og domains)
-        resolver: null,
-        // The chain where the resolution will take place
-        resolverChainId: null,
-        // The name about ot be resolved
-        resolvedName: null,
-        // Struct: The optional call to get the domain resolver (ENS does that).
-        fetchNameResolverCall: null,
-        // Struct: The call for the TXT record for the ERC-6821 record
-        erc6821ContentContractTxtCall: null,
-        // Struct: The optional call for domain resolution (unused if ERC-6821 resolution is successful)
-        resolveNameCall: null,
-        // Enum, possibilities are
-        // - direct: Direct domain name to address translation
-        // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
-        resolutionType: 'direct',
-        // If resolutionType is erc6821, contains the content of the TXT record
-        erc6821ContentContractTxt: null,
-        // Result of the resolution
-        resultAddress: null,
-        resultChainId: null,
-      },
+    let result = {}
 
-      contractAddress: null,
-      chainId: null,
-      chainRpc: null,
-      
-      // Web3 resolve mode: 'auto', 'manual' or 'resourceRequest'
-      mode: null,
-      // The calldata sent to the contract to determine the resolve mode
-      modeDeterminationCalldata: null,
-      // The data returned by the contract to determine the resolve mode
-      modeDeterminationReturn: null,
-      
+    // Step 1.1 : Extract parts of the URL, determine if a chain id was provided.
+    let {urlMainParts, chainId} = this.parseUrlBasic(url)
+    result.chainId = chainId
+    
+    // Step 1.2 : For a given hostname, determine the target contract address.
+    let {contractAddress, chainId: updatedChainId, nameResolution} = await this.determineTargetContractAddress(urlMainParts.hostname, result.chainId)
+    result.contractAddress = contractAddress
+    result.chainId = updatedChainId
+    // Informations on how the hostname of the URL was resolved
+    result.nameResolution = nameResolution
+
+    // Step 1.3 : Determine the web3 mode.
+    const resolveModeDeterminationResult = await this.determineResolveMode(result.contractAddress, result.chainId)
+    // Web3 resolve mode: 'auto', 'manual' or 'resourceRequest'
+    result.mode = resolveModeDeterminationResult.mode
+    // The calldata sent to the contract to determine the resolve mode
+    result.modeDeterminationCalldata = resolveModeDeterminationResult.calldata
+    // The data returned by the contract to determine the resolve mode
+    result.modeDeterminationReturn = resolveModeDeterminationResult.return
+
+    // Step 1.4 : Parse the path part of the URL, given the web3 resolve mode.
+    let parsedPath = await this.parsePathForResolveMode(urlMainParts.path, result.mode, result.chainId)
+    result = {...result, ...parsedPath}
+
+    return result
+  }
+
+  /**
+   * Step 1.1 : Extract parts of the URL, determine if a chain id was provided.
+   */
+  parseUrlBasic(url) {
+    let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?]+)(:(?<chainId>[1-9][0-9]*))?(?<path>.*)?$/)
+    if(matchResult == null) {
+      throw new Error("Failed basic parsing of the URL");
+    }
+    let urlMainParts = matchResult.groups
+
+    // Check protocol name
+    if(["web3", "w3"].includes(urlMainParts.protocol) == false) {
+      throw new Error("Bad protocol name");
+    }
+
+
+    // Web3 network : if provided in the URL, use it, or mainnet by default
+    let chainId = 1
+    // Was the network id specified?
+    if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
+      chainId = parseInt(urlMainParts.chainId);
+    }
+
+    return {urlMainParts, chainId}
+  }
+
+  /**
+   * Step 1.2 : For a given hostname, determine the target contract address.
+   * This includes ERC-6821 features, so only use that on the main hostname of a web3 URL,
+   * not on auto-mode address arguments.
+   */
+  async determineTargetContractAddress(hostname, chainId) {
+    let contractAddress = null
+    let nameResolution = {
+      // Enum, possibilities are
+      // - ens
+      // - linagee (for .og domains)
+      resolver: null,
+      // The chain where the resolution will take place
+      resolverChainId: null,
+      // The name about ot be resolved
+      resolvedName: null,
+      // Struct: The optional call to get the domain resolver (ENS does that).
+      fetchNameResolverCall: null,
+      // Struct: The call for the TXT record for the ERC-6821 record
+      erc6821ContentContractTxtCall: null,
+      // Struct: The optional call for domain resolution (unused if ERC-6821 resolution is successful)
+      resolveNameCall: null,
+      // Enum, possibilities are
+      // - direct: Direct domain name to address translation
+      // - contentContractTxt: ERC-6821 Cross-chain resolution via the contentcontract TXT record
+      resolutionType: 'direct',
+      // If resolutionType is erc6821, contains the content of the TXT record
+      erc6821ContentContractTxt: null,
+      // Result of the resolution
+      resultAddress: null,
+      resultChainId: null,
+    }
+
+    // Prepare the chain client
+    let chainClient = this.#chainClientProvider.getChainClient(chainId)
+
+    // Contract address / Domain name
+    // Is the hostname an ethereum address? 
+    if(/^0x[0-9a-fA-F]{40}$/.test(hostname)) {
+      contractAddress = hostname;
+    } 
+    // Hostname is not an ethereum address, try name resolution
+    else {
+      let domainNameResolver = this.#domainNameResolver.getEligibleDomainNameResolver(hostname, chainClient.chain().id);
+      if(domainNameResolver) {
+        // Do the name resolution
+        let resolutionInfos = null
+        try {
+          resolutionInfos = await this.#domainNameResolver.resolveDomainNameInclErc6821(domainNameResolver, hostname, chainClient, this.#chainList)
+        }
+        catch(err) {
+          throw new Error('Failed to resolve domain name ' + hostname + ' : ' + err);
+        }
+
+        // Store infos about the name resolution
+        nameResolution = {...nameResolution, ...resolutionInfos}
+
+        // Set contractAddress address
+        contractAddress = resolutionInfos.resultAddress
+        // We got an address on another chain? Update the chainId and the chainClient
+        if(resolutionInfos.resultChainId) {
+          chainId = resolutionInfos.resultChainId
+
+          chainClient = this.#chainClientProvider.getChainClient(chainId)
+        }
+      }
+      // Domain name not supported in this chain
+      else {
+        throw new Error('Unresolvable domain name : ' + hostname + ' : no supported resolvers found in this chain');
+      }
+    }
+
+    return {contractAddress, chainId, nameResolution}
+  }
+
+  /**
+   * Step 1.3 : Determine the web3 mode.
+   * 3 modes :
+   * - Auto : we parse the path and arguments and send them
+   * - Manual : we forward all the path & arguments as calldata
+   * - ResourceRequest : we parse the path and arguments and send them
+   */
+  async determineResolveMode(contractAddress, chainId) {
+    // Prepare the chain client
+    let chainClient = this.#chainClientProvider.getChainClient(chainId)
+
+    const resolveModeDeterminationResult = await this.#resolveModeDeterminator.determineResolveMode(chainClient, contractAddress)
+
+    return resolveModeDeterminationResult
+  }
+
+  /**
+   * Step 1.4 : Parse the path part of the URL, given the web3 resolve mode.
+   */
+  async parsePathForResolveMode(path, mode, chainId) {
+    let result = {
       // How do we call the smartcontract
       // 'calldata' : We send the specified calldata
       // 'method': We use the specified method parameters
@@ -126,87 +239,19 @@ class Client {
       },
     }
 
-    let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?]+)(:(?<chainId>[1-9][0-9]*))?(?<path>.*)?$/)
-    if(matchResult == null) {
-      throw new Error("Failed basic parsing of the URL");
-    }
-    let urlMainParts = matchResult.groups
-
-    // Check protocol name
-    if(["web3", "w3"].includes(urlMainParts.protocol) == false) {
-      throw new Error("Bad protocol name");
-    }
-
-
-    // Web3 network : if provided in the URL, use it, or mainnet by default
-    result.chainId = 1
-    // Was the network id specified?
-    if(urlMainParts.chainId !== undefined && isNaN(parseInt(urlMainParts.chainId)) == false) {
-      result.chainId = parseInt(urlMainParts.chainId);
-    }
     // Prepare the chain client
-    let chainClient = this.#chainClientProvider.getChainClient(result.chainId)
-
-    // Contract address / Domain name
-    // Is the hostname an ethereum address? 
-    if(/^0x[0-9a-fA-F]{40}$/.test(urlMainParts.hostname)) {
-      result.contractAddress = urlMainParts.hostname;
-    } 
-    // Hostname is not an ethereum address, try name resolution
-    else {
-      let domainNameResolver = this.#domainNameResolver.getEligibleDomainNameResolver(urlMainParts.hostname, chainClient.chain().id);
-      if(domainNameResolver) {
-        // Do the name resolution
-        let resolutionInfos = null
-        try {
-          resolutionInfos = await this.#domainNameResolver.resolveDomainNameInclErc6821(domainNameResolver, urlMainParts.hostname, chainClient, this.#chainList)
-        }
-        catch(err) {
-          throw new Error('Failed to resolve domain name ' + urlMainParts.hostname + ' : ' + err);
-        }
-
-        // Store infos about the name resolution
-        result.nameResolution = {...result.nameResolution, ...resolutionInfos}
-
-        // Set contractAddress address
-        result.contractAddress = resolutionInfos.resultAddress
-        // We got an address on another chain? Update the chainId and the chainClient
-        if(resolutionInfos.resultChainId) {
-          result.chainId = resolutionInfos.resultChainId
-
-          chainClient = this.#chainClientProvider.getChainClient(result.chainId)
-        }
-      }
-      // Domain name not supported in this chain
-      else {
-        throw new Error('Unresolvable domain name : ' + urlMainParts.hostname + ' : no supported resolvers found in this chain');
-      }
-    }
-
-
-    // Determining the web3 mode
-    // 3 modes :
-    // - Auto : we parse the path and arguments and send them
-    // - Manual : we forward all the path & arguments as calldata
-    // - ResourceRequest : we parse the path and arguments and send them
-
-    const resolveModeDeterminationResult = await this.#resolveModeDeterminator.determineResolveMode(chainClient, result.contractAddress)
-    result.mode = resolveModeDeterminationResult.mode
-    result.modeDeterminationCalldata = resolveModeDeterminationResult.calldata
-    result.modeDeterminationReturn = resolveModeDeterminationResult.return
-
+    let chainClient = this.#chainClientProvider.getChainClient(chainId)
 
     // Parse the URL per the selected mode
-    if(result.mode == 'manual') {
-      parseManualUrl(result, urlMainParts.path)
+    if(mode == 'manual') {
+      parseManualUrl(result, path)
     }
-    else if(result.mode == 'auto') {
-      await parseAutoUrl(result, urlMainParts.path, chainClient, this.#domainNameResolver)
+    else if(mode == 'auto') {
+      await parseAutoUrl(result, path, chainClient, this.#domainNameResolver)
     }
-    else if(result.mode == 'resourceRequest') {
-      parseResourceRequestUrl(result, urlMainParts.path)
+    else if(mode == 'resourceRequest') {
+      parseResourceRequestUrl(result, path)
     }
-
 
     // If contract call mode is method, prepare calldata
     if (result.contractCallMode == 'method') {
@@ -225,8 +270,9 @@ class Client {
       })
     }
 
-    return result
+    return result;
   }
+
 
   /**
    * Step 2: Make the call to the main contract.
