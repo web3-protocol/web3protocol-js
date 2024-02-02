@@ -66,17 +66,24 @@ class ChainClient {
    * In case of success or failure, it will return which RPC was called, 
    * and for each, the error if any.
    */
-  async callContract(args) {
+  async callMethod(args) {
     const calldata = encodeFunctionData({
       abi: args.abi,
       functionName: args.functionName,
       args: args.args,
     })
 
-    const callResult = await this.call({
-      to: args.contractAddress,
-      input: calldata
-    })
+    let callResult = null
+    try {
+      callResult = await this.call({
+        to: args.contractAddress,
+        input: calldata
+      })
+    }
+    catch(err) {
+      // Forward the error, adding the calldata in it
+      throw new CallMethodError(err.toString(), calldata, err.rpcUrls, err.rpcUrlsErrors)
+    }
 
     const decodedResult = decodeFunctionResult({abi: args.abi, functionName: args.functionName, data: callResult.data})
 
@@ -120,7 +127,7 @@ class ChainClient {
       // All RPCs calls failed? 
       if(rpcUrlUsedIndex == rpcUrls.length) {
         // Throw an error with the individual RPC errors
-        throw new RPCsError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0], rpcUrls, rpcUrlsErrors)
+        throw new CallError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0], rpcUrls, rpcUrlsErrors)
       }
     }
     // Parralel mode: The first to answer is used
@@ -152,7 +159,7 @@ class ChainClient {
             return resolve(result);
           },
           (err) => {
-            return reject(new RPCsError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0], rpcUrls, rpcUrlsErrors))
+            return reject(new CallError("All RPC providers failed the request. First RPC provider error: " + rpcUrlsErrors[0], rpcUrls, rpcUrlsErrors))
           });
       })
       output = result.output
@@ -210,9 +217,18 @@ class ChainClient {
   }
 }
 
-class RPCsError extends Error {
+class CallError extends Error {
   constructor(message = "", rpcUrls, rpcUrlsErrors) {
     super(message);
+    this.rpcUrls = rpcUrls;
+    this.rpcUrlsErrors = rpcUrlsErrors;
+  }
+}
+
+class CallMethodError extends Error {
+  constructor(message = "", calldata, rpcUrls, rpcUrlsErrors) {
+    super(message);
+    this.calldata = calldata;
     this.rpcUrls = rpcUrls;
     this.rpcUrlsErrors = rpcUrlsErrors;
   }

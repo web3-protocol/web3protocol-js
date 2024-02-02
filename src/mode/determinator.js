@@ -39,38 +39,45 @@ class Determinator {
     let result = {
       // Default mode is auto
       mode: 'auto',
-      calldata: null,
-      return: null,
+      modeDetermination: {
+        contractAddress: contractAddress,
+        chainId: chainClient.chain().id,
+        methodName: 'resolveMode',
+        methodArgs: [],
+      }
     }
     
     // Detect if the contract is another mode
-    let resolveModeAbi = [{
+    const resolveModeAbi = [{
       inputs: [],
       name: 'resolveMode',
       outputs: [{type: 'bytes32'}],
       stateMutability: 'view',
       type: 'function',
     }];
-    result.calldata = encodeFunctionData({
-      abi: resolveModeAbi,
-      functionName: 'resolveMode',
-      args: [],
-    })
     try {
-      let rawOutput = await chainClient.call({
-        to: contractAddress,
-        data: result.calldata,
+      const contractCallResult = await chainClient.callMethod({
+        abi: resolveModeAbi,
+        contractAddress: result.modeDetermination.contractAddress,
+        functionName: result.modeDetermination.methodName,
+        args: result.modeDetermination.methodArgs
       })
-      if(rawOutput.data !== undefined) {
-        result.return = rawOutput.data;
+      result.modeDetermination = {...result.modeDetermination, ...contractCallResult}
+    }
+    // If call to resolveMode fails, we default to auto
+    catch(err) {
+      // We assume error to be always of type CallMethodError
+      result.modeDetermination.calldata = err.calldata
+      result.modeDetermination.callResult = {
+        data : '0x',
+        rpcUrls: err.rpcUrls,
+        rpcUrlsErrors: err.rpcUrlsErrors,
+        rpcUrlUsedIndex: 0
       }
+      result.modeDetermination.decodedResult = '0x'
     }
-    catch(err) {/** If call to resolveMode fails, we default to auto */}
 
-    let resolveModeAsString = ''
-    if(result.return) {
-      resolveModeAsString = Buffer.from(result.return.substr(2), "hex").toString().replace(/\0/g, '');
-    }
+    const resolveModeAsString = Buffer.from(result.modeDetermination.decodedResult.substr(2), "hex").toString().replace(/\0/g, '');
     if(['', 'auto', 'manual', '5219'].indexOf(resolveModeAsString) === -1) {
       throw new Error("web3 resolveMode '" + resolveModeAsString + "' is not supported")
     }

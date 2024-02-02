@@ -60,7 +60,9 @@ class Client {
    * Step 1 : Parse the URL and determine how we are going to call the main contract.
    */
   async parseUrl(url) {
-    let result = {}
+    let result = {
+      url: url
+    }
 
     // Step 1.1 : Extract parts of the URL, determine if a chain id was provided.
     let {urlMainParts, chainId} = this.parseUrlBasic(url)
@@ -77,10 +79,8 @@ class Client {
     const resolveModeDeterminationResult = await this.determineResolveMode(result.contractAddress, result.chainId)
     // Web3 resolve mode: 'auto', 'manual' or 'resourceRequest'
     result.mode = resolveModeDeterminationResult.mode
-    // The calldata sent to the contract to determine the resolve mode
-    result.modeDeterminationCalldata = resolveModeDeterminationResult.calldata
-    // The data returned by the contract to determine the resolve mode
-    result.modeDeterminationReturn = resolveModeDeterminationResult.return
+    // Infos about the mode determination
+    result.modeDetermination = resolveModeDeterminationResult.modeDetermination
 
     // Step 1.4 : Parse the path part of the URL, given the web3 resolve mode.
     let parsedPath = await this.parsePathForResolveMode(urlMainParts.path, result.mode, result.chainId)
@@ -145,7 +145,7 @@ class Client {
       erc6821ContentContractTxt: null,
       // Result of the resolution
       resultAddress: null,
-      resultChainId: null,
+      resultChainId: null, // If null, we stay on the same chain
     }
 
     // Prepare the chain client
@@ -177,8 +177,6 @@ class Client {
         // We got an address on another chain? Update the chainId and the chainClient
         if(resolutionInfos.resultChainId) {
           chainId = resolutionInfos.resultChainId
-
-          chainClient = this.#chainClientProvider.getChainClient(chainId)
         }
       }
       // Domain name not supported in this chain

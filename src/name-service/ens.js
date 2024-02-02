@@ -33,9 +33,10 @@ const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainLis
 
   // Get ENS text
   result.erc6821ContentContractTxtCall = {
-    contractAddress: result.fetchNameResolverCall.result.decodedResult,
-    chaidId: chainClient.chain().id,
-    result: null
+    contractAddress: result.fetchNameResolverCall.decodedResult,
+    chainId: chainClient.chain().id,
+    methodName: 'text',
+    methodArgs: [nameHash, "contentcontract"]
   }
   const getTextAbi = [{
     type: 'function',
@@ -44,13 +45,15 @@ const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainLis
     outputs: [{type: 'string'}],
     stateMutability: 'view',
   }];
-  result.erc6821ContentContractTxtCall.result = await chainClient.callContract({
+  const contractCallResult = await chainClient.callMethod({
     abi: getTextAbi,
     contractAddress: result.erc6821ContentContractTxtCall.contractAddress,
-    functionName: 'text',
-    args: [nameHash, "contentcontract"]
+    functionName: result.erc6821ContentContractTxtCall.methodName,
+    args: result.erc6821ContentContractTxtCall.methodArgs
   })
-  result.erc6821ContentContractTxt = result.erc6821ContentContractTxtCall.result.decodedResult
+  result.erc6821ContentContractTxtCall = {...result.erc6821ContentContractTxtCall, ...contractCallResult}
+  
+  result.erc6821ContentContractTxt = result.erc6821ContentContractTxtCall.decodedResult
 
   // contentcontract TXT case
   if(result.erc6821ContentContractTxt) {
@@ -86,8 +89,8 @@ const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainLis
   else {
     result.resolutionType = 'direct'
 
-    result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.result.decodedResult)
-    result.resultAddress = result.resolveNameCall.result.decodedResult
+    result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.decodedResult)
+    result.resultAddress = result.resolveNameCall.decodedResult
   }
 
   return result
@@ -114,8 +117,8 @@ const ensResolveDomainName = async (domainName, chainClient) => {
   result.fetchNameResolverCall = await ensGetDomainNameResolver(nameHash, chainClient)
 
   // Get address
-  result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.result.decodedResult)
-  result.resultAddress = result.resolveNameCall.result.decodedResult
+  result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.decodedResult)
+  result.resultAddress = result.resolveNameCall.decodedResult
 
   return result
 }
@@ -123,8 +126,9 @@ const ensResolveDomainName = async (domainName, chainClient) => {
 const ensGetDomainNameResolver = async(domainNameHash, chainClient) => {
   let result = {
     contractAddress: chainClient.chain().contracts.ensRegistry.address,
-    chaidId: chainClient.chain().id,
-    result: null
+    chainId: chainClient.chain().id,
+    methodName: 'resolver',
+    methodArgs: [domainNameHash]
   }
 
   const getResolverAbi = [{
@@ -135,22 +139,24 @@ const ensGetDomainNameResolver = async(domainNameHash, chainClient) => {
     stateMutability: 'view',
   }];
 
-  result.result = await chainClient.callContract({
+  const contractCallResult = await chainClient.callMethod({
     abi: getResolverAbi,
     contractAddress: result.contractAddress,
-    functionName: 'resolver',
-    args: [domainNameHash]
+    functionName: result.methodName,
+    args: result.methodArgs
   })
+  result = {...result, ...contractCallResult}
 
   return result;
 }
 
 const ensResolveDomainNameWithResolver = async (domainNameHash, chainClient, resolverAddress) => {
   let result = {
-      contractAddress: resolverAddress,
-      chaidId: chainClient.chain().id,
-      result: null
-    }
+    contractAddress: resolverAddress,
+    chainId: chainClient.chain().id,
+    methodName: 'addr',
+    methodArgs: [domainNameHash]
+  }
 
   const getAddressAbi = [{
     type: 'function',
@@ -160,14 +166,15 @@ const ensResolveDomainNameWithResolver = async (domainNameHash, chainClient, res
     stateMutability: 'view',
   }];
 
-  result.result = await chainClient.callContract({
+  const contractCallResult = await chainClient.callMethod({
     abi: getAddressAbi,
     contractAddress: result.contractAddress,
-    functionName: 'addr',
-    args: [domainNameHash]
+    functionName: result.methodName,
+    args: result.methodArgs
   })
+  result = {...result, ...contractCallResult}
 
-  if(result.result.decodedResult == null || result.result.decodedResult == "0x0000000000000000000000000000000000000000") {
+  if(result.decodedResult == null || result.decodedResult == "0x0000000000000000000000000000000000000000") {
     throw new Error("Unable to resolve the argument as an ethereum .eth address")
   }
   

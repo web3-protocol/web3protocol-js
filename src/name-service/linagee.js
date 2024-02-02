@@ -47,19 +47,21 @@ const linageeResolveDomainName = async (domainName, chainClient) => {
   result.resolveNameCall = {
     contractAddress: linagee.address,
     chainId: chainClient.chain().id,
-    result: null,
+    methodName: "resolve",
+    methodArgs: [result.resolvedName]
   }
-  result.resolveNameCall.result = await chainClient.callContract({ 
+  const contractCallResult = await chainClient.callMethod({ 
     contractAddress: result.resolveNameCall.contractAddress,
     abi: linagee.abi,
-    functionName: "resolve",
-    args: [result.resolvedName]
+    functionName: result.resolveNameCall.methodName,
+    args: result.resolveNameCall.methodArgs
   });
+  result.resolveNameCall = {...result.resolveNameCall, ...contractCallResult}
 
-  if(result.resolveNameCall.result.decodedResult == "0x0000000000000000000000000000000000000000") {
+  if(result.resolveNameCall.decodedResult == "0x0000000000000000000000000000000000000000") {
     throw new Error("Unable to resolve the argument as an ethereum .og address")
   }
-  result.resultAddress = result.resolveNameCall.result.decodedResult;
+  result.resultAddress = result.resolveNameCall.decodedResult;
 
   return result
 }
@@ -94,15 +96,17 @@ const linageeResolveDomainNameInclErc6821 = async (domainName, chainClient, chai
   result.erc6821ContentContractTxtCall = {
     contractAddress: linagee.address,
     chainId: chainClient.chain().id,
-    result: null
+    methodName: 'getTextRecord',
+    methodArgs: [linagee.domainAsBytes32(result.resolvedName), 'contentcontract']
   }
-  result.erc6821ContentContractTxtCall.result = await chainClient.callContract({ 
+  const contractCallResult = await chainClient.callMethod({ 
     contractAddress: result.erc6821ContentContractTxtCall.contractAddress,
     abi: linagee.abi,
-    functionName: "getTextRecord",
-    args: [linagee.domainAsBytes32(result.resolvedName), 'contentcontract']
+    functionName: result.erc6821ContentContractTxtCall.methodName,
+    args: result.erc6821ContentContractTxtCall.methodArgs
   });
-  result.erc6821ContentContractTxt = result.erc6821ContentContractTxtCall.result.decodedResult
+  result.erc6821ContentContractTxtCall = {...result.erc6821ContentContractTxtCall, ...contractCallResult}
+  result.erc6821ContentContractTxt = result.erc6821ContentContractTxtCall.decodedResult
 
   // contentcontract TXT case
   if(result.erc6821ContentContractTxt) {
