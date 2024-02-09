@@ -31,6 +31,7 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
         standard == "ERC-6821" || // ENS name resolution
         standard == "ERC-6944" || // Resource request mode
         standard == "ERC-7087" || // MIME type for auto mode
+        standard == "ERC-7617" || // Chunk support for resource request mode
         standard == "ERC-7618") { // Content-encoding for resource request mode
         isStandardSupported = true
       }
