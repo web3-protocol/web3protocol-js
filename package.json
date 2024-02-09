@@ -7,6 +7,9 @@
     ".": "./src/index.js",
     "./chains": "./src/chains/index.js"
   },
+  "browser": {
+    "./src/utils/module-loaders/brotli-wasm.cjs": "./src/utils/module-loaders/brotli-wasm-browser.js"
+  },
   "author": "nand2",
   "license": "MIT",
   "engines": {
@@ -20,6 +23,7 @@
     "test": "node --experimental-vm-modules ./node_modules/.bin/jest"
   },
   "dependencies": {
+    "brotli-wasm": "2.0.1",
     "buffer": "6.0.3",
     "cross-fetch": "^4.0.0",
     "mime": "^4.0.0",
