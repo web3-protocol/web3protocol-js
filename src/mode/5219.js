@@ -62,7 +62,7 @@ function processResourceRequestContractReturn(client, fetchedUrl, contractReturn
       if(outputBytes.length > 0)
         controller.enqueue(outputBytes);
 
-      // Experimental support for chunking -- needs to be finalized and put on an ERC
+      // ERC-7617: Support for chunking
       // Recursive fetching of next chunks
       async function getNextChunk(nextChunkUrl) {
         // End? We close the stream
