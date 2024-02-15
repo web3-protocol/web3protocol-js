@@ -43,7 +43,7 @@ Apps using web3protocol : [web3curl](https://github.com/web3-protocol/web3curl-j
 
 ### Partially implemented features
 
-- [ERC-7087](https://github.com/ethereum/ERCs/pull/98) (pending) : Auto mode : Add MIME type support
+- [ERC-7087](https://eips.ethereum.org/EIPS/eip-7087) (draft) :  Auto mode : Add MIME type support (dataURLs not supported yet)
 
 ## Options
 
