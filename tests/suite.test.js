@@ -139,7 +139,25 @@ for(let k = 0; k < testSuiteFiles.length; k++) {
 
             // Expected failure
             if(tst.error) {
-              await expect(async () => {await web3Client.processContractReturn(parsedUrl, {data: tst.contractReturn})}).rejects.toThrowError()
+              await expect(async () => {
+                // Execute the processing
+                let fetchedWeb3Url = await web3Client.processContractReturn(parsedUrl, {data: tst.contractReturn})
+
+                // Fetch output from stream
+                let output = new Uint8Array();
+                const reader = fetchedWeb3Url.output.getReader();
+                while (true) {
+                  const { done, value } = await reader.read();
+                  if(value) {
+                    output = new Uint8Array([...output, ...value])
+                  }
+
+                  // When no more data needs to be consumed, break the reading
+                  if (done) {
+                    break;
+                  }
+                }
+              }).rejects.toThrowError()
               return
             }
 
