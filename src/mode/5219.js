@@ -46,14 +46,14 @@ function processResourceRequestContractReturn(client, fetchedUrl, contractReturn
   // Official interface second argumetn is "string", we do "bytes" to additionally support binary data
   // Being discussed
   const returnABI = [{type: 'uint16'}, {type: 'bytes'}, {type: 'tuple[]', components: [{type: "string"}, {type: "string"}]}];
-  const decodedContractReturn = decodeAbiParameters(returnABI, contractReturn)
+  fetchedUrl.decodedContractReturn = decodeAbiParameters(returnABI, contractReturn)
 
-  fetchedUrl.httpCode = decodedContractReturn[0]
-  for(let i = 0; i < decodedContractReturn[2].length; i++) {
-    fetchedUrl.httpHeaders[decodedContractReturn[2][i][0]] = decodedContractReturn[2][i][1];
+  fetchedUrl.httpCode = fetchedUrl.decodedContractReturn[0]
+  for(let i = 0; i < fetchedUrl.decodedContractReturn[2].length; i++) {
+    fetchedUrl.httpHeaders[fetchedUrl.decodedContractReturn[2][i][0]] = fetchedUrl.decodedContractReturn[2][i][1];
   }
   // Convert it into a Uint8Array byte buffer
-  let outputBytes = hexToBytes(decodedContractReturn[1])
+  let outputBytes = hexToBytes(fetchedUrl.decodedContractReturn[1])
   
   // Prepare the readable stream
   fetchedUrl.output = new ReadableStream({

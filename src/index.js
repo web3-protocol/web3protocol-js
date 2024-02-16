@@ -296,20 +296,25 @@ class Client {
   async processContractReturn(parsedUrl, contractReturn) {
     // Contract return processing
     let fetchedUrl = {
+      // The data to be used by the web client
       httpCode: 200,
       httpHeaders: {},
       output: null, // Readable stream 
+      // The data indicating how the URL was processed
       // The result of processing of step 1 parseUrl()
       parsedUrl: parsedUrl,
       // The result of processing of step 2 fetchContractReturn()
       fetchedContractReturn: contractReturn,
+      // The decoded contract return, depending of the contractReturnProcessing.
+      // Can be null if contractReturnProcessing is 'jsonEncodeRawBytes'
+      decodedContractReturn: null,
     }
 
     if(parsedUrl.contractReturnProcessing == 'decodeABIEncodedBytes') {
       // Do the ABI decoding, receive the bytes in hex string format
-      let decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn.data)
+      fetchedUrl.decodedContractReturn = decodeAbiParameters([{ type: 'bytes' }], contractReturn.data)
       // Convert it into a Uint8Array byte buffer
-      let outputBytes = hexToBytes(decodedContractReturn[0])
+      let outputBytes = hexToBytes(fetchedUrl.decodedContractReturn[0])
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
         type: "bytes",
@@ -343,10 +348,10 @@ class Client {
     }
     else if(parsedUrl.contractReturnProcessing == 'jsonEncodeValues') {
       // Do the ABI decoding, get the vars
-      let decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn.data)
+      fetchedUrl.decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn.data)
       // JSON-encode them
       // (If we have some bigInts, convert them into hex string)
-      let jsonEncodedValues = JSON.stringify(decodedContractReturn, 
+      let jsonEncodedValues = JSON.stringify(fetchedUrl.decodedContractReturn, 
         (key, value) => typeof value === "bigint" ? "0x" + value.toString(16) : value)
       // Convert it into a Uint8Array byte buffer
       let outputBytes = stringToBytes(jsonEncodedValues)
