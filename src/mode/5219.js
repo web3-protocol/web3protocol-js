@@ -57,7 +57,6 @@ function processResourceRequestContractReturn(client, fetchedUrl, contractReturn
   
   // Prepare the readable stream
   fetchedUrl.output = new ReadableStream({
-    type: "bytes",
     async start(controller) {
       if(outputBytes.length > 0)
         controller.enqueue(outputBytes);

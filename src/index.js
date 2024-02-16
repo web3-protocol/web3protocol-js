@@ -317,7 +317,7 @@ class Client {
       let outputBytes = hexToBytes(fetchedUrl.decodedContractReturn[0])
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        type: "bytes",
+        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);
@@ -336,7 +336,7 @@ class Client {
       let outputBytes = stringToBytes(jsonData)
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        type: "bytes",
+        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);
@@ -357,7 +357,7 @@ class Client {
       let outputBytes = stringToBytes(jsonEncodedValues)
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        type: "bytes",
+        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);
