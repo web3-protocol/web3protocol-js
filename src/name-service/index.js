@@ -65,15 +65,15 @@ class Resolver {
   }
 
   // For a given domain and chain, return a eligible resolver (ens, ...)
-  getEligibleDomainNameResolver(domainName, chainId) {
+  getEligibleDomainNameResolver(domainName, chain) {
     let result = null;
 
     if(typeof domainName == 'string' &&
-      domainName.endsWith('.eth') && [1, 5, 11155111].includes(chainId)) {
+      domainName.endsWith('.eth') && chain.contracts?.ensRegistry?.address) {
       result = "ens";
     }
     else if(typeof domainName == 'string' &&
-      domainName.endsWith('.og') && [1].includes(chainId)) {
+      domainName.endsWith('.og') && [1].includes(chain.id)) {
       result = "linagee";
     }
 

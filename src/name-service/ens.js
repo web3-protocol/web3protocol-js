@@ -29,7 +29,7 @@ const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainLis
 
   // Get resolver for this domain name
   const nameHash = namehash(result.resolvedName)
-  result.fetchNameResolverCall = await ensGetDomainNameResolver(nameHash, chainClient)
+  result.fetchNameResolverCall = await ensGetDomainNameResolver(result.resolvedName, chainClient)
 
   // Get ENS text
   result.erc6821ContentContractTxtCall = {
@@ -89,7 +89,7 @@ const ensResolveDomainNameInclErc6821 = async (domainName, chainClient, chainLis
   else {
     result.resolutionType = 'direct'
 
-    result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.decodedResult)
+    result.resolveNameCall = await ensResolveDomainNameWithResolver(result.resolvedName, chainClient, result.fetchNameResolverCall.decodedResult)
     result.resultAddress = result.resolveNameCall.decodedResult
   }
 
@@ -113,17 +113,23 @@ const ensResolveDomainName = async (domainName, chainClient) => {
   result.resolvedName = ensNormalize(domainName)
 
   // Get resolver for this domain name
-  const nameHash = namehash(result.resolvedName)
-  result.fetchNameResolverCall = await ensGetDomainNameResolver(nameHash, chainClient)
+  result.fetchNameResolverCall = await ensGetDomainNameResolver(result.resolvedName, chainClient)
 
   // Get address
-  result.resolveNameCall = await ensResolveDomainNameWithResolver(nameHash, chainClient, result.fetchNameResolverCall.decodedResult)
+  result.resolveNameCall = await ensResolveDomainNameWithResolver(result.resolvedName, chainClient, result.fetchNameResolverCall.decodedResult)
   result.resultAddress = result.resolveNameCall.decodedResult
 
   return result
 }
 
-const ensGetDomainNameResolver = async(domainNameHash, chainClient) => {
+const ensGetDomainNameResolver = async(domainName, chainClient) => {
+  // Get the parent domain (e.g. xxx.eth for yyy.xxx.eth, xxx.eth for xxx.eth)
+  let domainParts = domainName.split('.')
+  let parentDomain = domainParts.slice(-2).join('.')
+
+  // Get the namehash of the parent domain
+  let domainNameHash = namehash(parentDomain)
+
   let result = {
     contractAddress: chainClient.chain().contracts.ensRegistry.address,
     chainId: chainClient.chain().id,
@@ -150,7 +156,10 @@ const ensGetDomainNameResolver = async(domainNameHash, chainClient) => {
   return result;
 }
 
-const ensResolveDomainNameWithResolver = async (domainNameHash, chainClient, resolverAddress) => {
+const ensResolveDomainNameWithResolver = async (domainName, chainClient, resolverAddress) => {
+  // Compute the domain name hash
+  const domainNameHash = namehash(domainName)
+
   let result = {
     contractAddress: resolverAddress,
     chainId: chainClient.chain().id,

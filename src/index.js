@@ -158,7 +158,7 @@ class Client {
     } 
     // Hostname is not an ethereum address, try name resolution
     else {
-      let domainNameResolver = this.#domainNameResolver.getEligibleDomainNameResolver(hostname, chainClient.chain().id);
+      let domainNameResolver = this.#domainNameResolver.getEligibleDomainNameResolver(hostname, chainClient.chain());
       if(domainNameResolver) {
         // Do the name resolution
         let resolutionInfos = null
@@ -317,7 +317,6 @@ class Client {
       let outputBytes = hexToBytes(fetchedUrl.decodedContractReturn[0])
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);
@@ -336,7 +335,6 @@ class Client {
       let outputBytes = stringToBytes(jsonData)
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);
@@ -357,7 +355,6 @@ class Client {
       let outputBytes = stringToBytes(jsonEncodedValues)
       // Make it a readable stream
       fetchedUrl.output = new ReadableStream({
-        // type: "bytes", // Removing this optimization due to... Safari again!
         start(controller) {
           if(outputBytes.length > 0)
             controller.enqueue(outputBytes);

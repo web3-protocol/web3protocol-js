@@ -231,7 +231,7 @@ async function parseAutoUrlArgument(argument, chainClient, resolver) {
       }
       // Domain name
       else {
-        let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
+        let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain())
         if(domainNameResolver) {
           // Will throw an error if failure
           let nameResolution = await resolver.resolveDomainName(domainNameResolver, argValueStr, chainClient);
@@ -285,7 +285,7 @@ async function parseAutoUrlArgument(argument, chainClient, resolver) {
     }
     // Fallback autodetection: It must be a domain name
     else {
-      let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain().id)
+      let domainNameResolver = resolver.getEligibleDomainNameResolver(argValueStr, chainClient.chain())
       if(domainNameResolver) {
         result.type = "address"
         // Will throw an error if failure
