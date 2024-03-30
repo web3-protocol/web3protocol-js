@@ -123,12 +123,8 @@ const ensResolveDomainName = async (domainName, chainClient) => {
 }
 
 const ensGetDomainNameResolver = async(domainName, chainClient) => {
-  // Get the parent domain (e.g. xxx.eth for yyy.xxx.eth, xxx.eth for xxx.eth)
-  let domainParts = domainName.split('.')
-  let parentDomain = domainParts.slice(-2).join('.')
-
-  // Get the namehash of the parent domain
-  let domainNameHash = namehash(parentDomain)
+  // Get the namehash
+  let domainNameHash = namehash(domainName);
 
   let result = {
     contractAddress: chainClient.chain().contracts.ensRegistry.address,
