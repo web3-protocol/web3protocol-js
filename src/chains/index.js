@@ -53,6 +53,15 @@ function getDefaultChainList() {
     if(originalChain.chainId == 1) {
       defaultRpcs = ['https://ethereum.publicnode.com', 'https://cloudflare-eth.com']
     }
+    // EthStorage : Shortnames && RPCs have been decided to be changed,
+    // but they are not yet on chainid.network
+    if(originalChain.chainId == 333) {
+      originalChain.shortName = 'es'
+    }
+    if(originalChain.chainId == 3333) {
+      originalChain.shortName = 'es-t'
+      defaultRpcs = ['http://testnet.ethstorage.io:9540']
+    }
 
     let newChain = {
       id: originalChain.chainId,
