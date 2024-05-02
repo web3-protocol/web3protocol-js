@@ -348,9 +348,15 @@ class Client {
       // Do the ABI decoding, get the vars
       fetchedUrl.decodedContractReturn = decodeAbiParameters(parsedUrl.contractReturnProcessingOptions.jsonEncodedValueTypes, contractReturn.data)
       // JSON-encode them
-      // (If we have some bigInts, convert them into hex string)
       let jsonEncodedValues = JSON.stringify(fetchedUrl.decodedContractReturn, 
-        (key, value) => typeof value === "bigint" ? "0x" + value.toString(16) : value)
+        (key, value) => {
+          // Numbers are returned as bigInts (except 0): convert them into hex string
+          if(typeof value === "bigint") 
+            return "0x" + value.toString(16);
+          if(value === 0)
+            return "0x0";
+          return value;
+        })
       // Convert it into a Uint8Array byte buffer
       let outputBytes = stringToBytes(jsonEncodedValues)
       // Make it a readable stream
