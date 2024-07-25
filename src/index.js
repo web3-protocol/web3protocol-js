@@ -93,7 +93,7 @@ class Client {
    * Step 1.1 : Extract parts of the URL, determine if a chain id was provided.
    */
   parseUrlBasic(url) {
-    let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?]+)(:(?<chainId>[1-9][0-9]*))?(?<path>.*)?$/)
+    let matchResult = url.match(/^(?<protocol>[^:]+):\/\/(?<hostname>[^:\/?#]+)(:(?<chainId>[1-9][0-9]*))?(?<path>[^#]*)?(#(?<fragment>.*)?)?$/)
     if(matchResult == null) {
       throw new Error("Failed basic parsing of the URL");
     }
