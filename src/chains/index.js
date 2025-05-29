@@ -53,14 +53,28 @@ function getDefaultChainList() {
     if(originalChain.chainId == 1) {
       defaultRpcs = ['https://ethereum.publicnode.com', 'https://cloudflare-eth.com']
     }
+    // Sepolia : 
+    // Viem gives us https://rpc.sepolia.org but this RPC is not reliable
+    // So we add the publicnode one as the primary one, use sepolia.org as the fallback
+    if(originalChain.chainId == 11155111) {
+      defaultRpcs = ['https://ethereum-sepolia-rpc.publicnode.com', 'https://rpc.sepolia.org']
+    }
     // EthStorage : Shortnames && RPCs have been decided to be changed,
     // but they are not yet on chainid.network
     if(originalChain.chainId == 333) {
       originalChain.shortName = 'es'
     }
     if(originalChain.chainId == 3333) {
-      originalChain.shortName = 'es-t'
-      defaultRpcs = ['http://testnet.ethstorage.io:9540']
+      originalChain.name = 'Sepolia - EthStorage';
+      defaultRpcs = ['http://65.108.230.142:9545']
+    }
+    if(originalChain.chainId == 3335) {
+      originalChain.name = 'Quarkchain L2 Testnet';
+      defaultRpcs = ['https://rpc.beta.testnet.l2.quarkchain.io:8545']
+    }
+    if(originalChain.chainId == 3337) {
+      originalChain.name = 'Quarkchain L2 - EthStorage';
+      defaultRpcs = ['https://rpc.beta.testnet.l2.ethstorage.io:9596']
     }
 
     let newChain = {
